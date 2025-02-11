@@ -17,6 +17,162 @@ course path skills:
 - intermediate:
   - Authentication, Authorization, & Security
 
+### CodeSignal FileSystem Setup
+.sh, .py
+
+startup cmd: `/usercode/FILESYSTEM$ bash /usercode/FILESYSTEM/.codesignal/setup.sh -a`
+> ^ what is `bash -a`?
+
+#### `/usercode/FILESYSTEM$ cat test_config.json`
+```json
+{ 
+    "manual": false, 
+    "base_url": "http://127.0.0.1:5000", 
+    "endpoints": [ 
+        {"method": "post", "url": "/users", "json": {"username": "newuser", "email": "newuser@example.com"}}, 
+        {"method": "post", "url": "/users", "json": {"username": "nu", "email": "newuser@example.com"}}, 
+        {"method": "post", "url": "/users", "json": {"username": "newuser!", "email": "newuser@example.com"}}, 
+        {"method": "post", "url": "/users", "json": {"username": "newuser", "email": "newuser@invalid.com"}} 
+    ] 
+}
+```
+
+#### `/usercode/FILESYSTEM$ cat /usercode/FILESYSTEM/.codesignal/setup.sh`
+
+```sh
+#!/bin/sh
+# This script will be run when the environment is initialized.
+# Add any setup logic here.
+
+echo "Setting up environment…"
+
+# Install the required packages and suppress errors and warnings
+pip install -q Flask==2.2.5 gunicorn==22.0.0 marshmallow==3.21.3 2>/dev/null
+
+echo "Environment is set and ready to code!
+```
+
+#### `/usercode/FILESYSTEM$ cat .codesignal/run_solution.sh`
+
+```sh 
+cd /usercode/FILESYSTEM
+
+#!/bin/bash
+
+# Use Python to read the 'manual' field from test_config.json
+manual=$(python3 -c "import json; print(json.load(open('test_config.json'))['manual'])")
+
+# Check if Flask, Gunicorn, and Marshmallow are installed
+if ! python3 -c "import flask, gunicorn, marshmallow" &> /dev/null; then
+  echo "ERROR: The environment is still being set up, and necessary packages are not yet installed. To properly test the server and evaluate your work, please wait a few seconds and try again." >&2
+  exit 1
+fi
+
+if [ "$manual" == "True" ]; then
+    # Run the test script directly if manual is true
+    python3 test.py
+else
+    # Check if the server is already running on port 5000
+    if curl -s http://127.0.0.1:5000/ > /dev/null; then
+      echo "Server is already running on port 5000. Please stop it or reset the code session."
+      exit 1
+    fi
+
+    # Start Gunicorn server on default port 5000 in the background and redirect output to /dev/null
+    gunicorn --bind 127.0.0.1:5000 --log-level error solution:app &
+    server_pid=$!
+
+    # Function to wait for the server to start
+    wait_for_server() {
+      max_attempts=10
+      attempt=0
+
+      while (( attempt < max_attempts )); do
+        if ps -p $server_pid > /dev/null && curl -s http://127.0.0.1:5000/ > /dev/null; then
+          return 0  # Server is running and ready
+        fi
+        attempt=$(( attempt + 1 ))
+        sleep 1
+      done
+
+      return 1  # Server did not start in time
+    }
+
+    # Wait for the server to be ready and run the test script if successful
+    if wait_for_server; then
+      python3 test.py
+    else
+      echo "Failed to start the server in time for tests, there might be an error in the server code."
+      kill $server_pid 2>/dev/null
+      exit 1
+    fi
+
+    # Kill the Gunicorn server after tests are done
+    kill $server_pid
+fi
+```
+
+#### `/usercode/FILESYSTEM$ cat test.py`
+```py
+import json
+import httpx
+
+# Load the base url and test endpoints from config file
+with open('test_config.json') as f:
+    config = json.load(f)
+
+# Extracting base url
+base_url = config["base_url"]
+# Extracting endpoints to test
+endpoints = config["endpoints"]
+
+# Example of endpoints format
+# "endpoints": [
+#    {"method": "get", "url": "/"},
+#    {"method": "post", "url": "/create"},
+#    {"method": "put", "url": "/update", "json": {}},
+#    {"method": "delete", "url": "/delete"}
+#    ]
+
+for endpoint in endpoints:
+    method = endpoint["method"].lower()
+    url = endpoint["url"]
+    data = endpoint.get("json", {})
+
+    response = None
+    try:
+        match method:
+            case "get":
+                response = httpx.get(f"{base_url}{url}")
+            case "post":
+                response = httpx.post(f"{base_url}{url}", json=data)
+            case "put":
+                response = httpx.put(f"{base_url}{url}", json=data)
+            case "delete":
+                response = httpx.delete(f"{base_url}{url}")
+            case _:
+                print(f"Unsupported method: {method}")
+                continue
+        # Print method and url accessed (and data with passed)
+        if data:
+            print(f"Response from {method.upper()} {url} with {data}:")
+        else:
+            print(f"Response from {method.upper()} {url}:")
+        # Print status code received
+        print(f"Status Code: {response.status_code}")
+        # Print response content
+        try:
+            print(json.dumps(response.json(), indent=4), "\n")
+        except json.JSONDecodeError:
+            print(response.text, "\n")
+
+    except httpx.RequestError as exc:
+        print(f"Is your server running? An error occurred while requesting {exc.request.url!r}.")
+        print(f"Error: {exc}")
+
+    except Exception as exc:
+        print(f"An unexpected error occurred: {exc}")
+```
 
 ## Mastering Flask HTTP Methods
 
@@ -414,6 +570,52 @@ class UserSchema(Schema):
 ```
 
 ### Building Your Own Custom Validator
+
+- `@validates` -> ValidationError
+
+```py
+from marshmallow import Schema, fields, validates, ValidationError
+
+class ExampleSchema(Schema):
+    example_field = fields.Str()
+
+    @validates('example_field')
+    def validate_example_field(self, value):
+        if value != 'expected_value':  # Example condition
+            raise ValidationError('Value must be ...')
+
+
+class UserSchema(Schema):
+    id = fields.Int()
+    username = fields.Str(required=True)
+    email = fields.Email(required=True)
+    
+    # Custom validator for the username field
+    @validates('username')
+    def validate_username(self, value):
+        if len(value) < 3:
+            raise ValidationError('Username must be at least 3 characters.')
+        if not value.isalnum():
+            raise ValidationError('Username must contain only letters and numbers.')
+
+    # Custom validator for the email field
+    @validates('email')
+    def validate_email(self, value):
+        # valid if .com or .org
+        if not (value.endswith('@example.com') or value.endswith('@example.org')):
+            raise ValidationError('Email must be a valid @example.com address.')
+
+```
+
+Validation Error JSON Response:
+```json
+{
+    "error": {
+        "username": ["Username must be at least 3 characters."],
+        "email": ["Email must be a valid @example.com address."]
+    }
+}
+```
 
 
 
