@@ -2,6 +2,7 @@
 
 - https://learn.codesignal.com/course-paths/74
 - https://learn.codesignal.com/preview/course-paths/74#courses
+- https://codesignal.com/learn/paths/apis-made-easy-with-python-and-flask
 
 4 lessons, 20 lessons:
 1. Introduction to Flask Basics - 6 lessons
@@ -317,7 +318,8 @@ def create_user():
     # Add the new user to the mock database
     database.append(new_user)
     
-    # Return the newly added user as JSON with a status code 201 (Created)
+    # Return the newly added user as JSON with a status code 201 
+    # (HTTP request was successful and created a new resource)
     return jsonify(new_user), 201
 ```
 
@@ -605,6 +607,47 @@ class UserSchema(Schema):
         if not (value.endswith('@example.com') or value.endswith('@example.org')):
             raise ValidationError('Email must be a valid @example.com address.')
 
+#############
+
+# Define the ProductSchema
+class ProductSchema(Schema):
+    id = fields.Int()
+    name = fields.Str(required=True)
+    price = fields.Float(required=True)
+
+    # TODO: Custom validator for the name field
+    @validates('name')
+    def validate_name(self, value):
+        if len(value) < 4 or not value.isalpha():
+            raise ValidationError('name must be >= 4 and only letters')
+    # - The name must be at least 4 characters long and only contain letters
+
+    # TODO: Custom validator for the price field
+    @validates('price')
+    def validate_price(self, value):
+        if not value >= 0:
+            raise ValidationError('price must be >= 0')
+    # - The price must be a positive number greater than 0
+
+# Create an instance of the Product schema
+product_schema = ProductSchema()
+
+# Define a route to handle product creation
+@app.route('/products', methods=['POST'])
+def create_product():
+    try:
+        product_data = product_schema.load(request.get_json())
+    except ValidationError as err:
+        return jsonify(error=err.messages), 400
+
+    # Generate a new ID by finding the maximum existing ID and adding 1
+    new_id = max(product['id'] for product in database) + 1
+    product_data["id"] = new_id
+    # Add the new product to the mock database
+    database.append(product_data)
+    # Return the newly created product data as JSON response
+    return jsonify(product_data), 201
+
 ```
 
 Validation Error JSON Response:
@@ -615,6 +658,55 @@ Validation Error JSON Response:
         "email": ["Email must be a valid @example.com address."]
     }
 }
+```
+
+## Securing Flask Apps with JWT Authentication 
+
+```py
+from flask import Flask, request, jsonify
+from marshmallow import Schema, fields, ValidationError
+from marshmallow.validate import Length
+
+# Initialize a Flask app instance
+app = Flask(__name__)
+
+# Mock database of users
+database = [
+    {"id": 1, "username": "cosmo", "password": "space-corgi"}
+]
+
+# Define a schema for the login data
+class LoginSchema(Schema):
+    username = fields.Str(required=True, validate=Length(min=1))
+    password = fields.Str(required=True, validate=Length(min=1))
+
+# Create an instance of LoginSchema
+login_schema = LoginSchema()
+
+# Define a route to receive login credentials
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        # Validate and deserialize the input data according to the schema
+        data = login_schema.load(request.get_json())
+    except ValidationError as err:
+        # If validation fails, return an error message and a 400 status code
+        return jsonify(error=err.messages), 400
+
+    # Extract username and password from the validated data
+    username = data['username']
+    password = data['password']
+
+    # Find the user in the mock database
+    user = next((user for user in database if user["username"] == username), None)
+    
+    # Check if the user exists and if the password matches
+    if user and user["password"] == password:
+        # Login successful
+        return jsonify(message="Login successful"), 200
+    else:
+        # Return an error if the user does not exist or the password is incorrect
+        return jsonify(error="Bad username or password"), 401
 ```
 
 
