@@ -18,6 +18,8 @@ course path skills:
 - intermediate:
   - Authentication, Authorization, & Security
 
+## Course 1: Introduction to Flask Basics
+
 ### CodeSignal FileSystem Setup
 .sh, .py
 
@@ -175,7 +177,7 @@ for endpoint in endpoints:
         print(f"An unexpected error occurred: {exc}")
 ```
 
-## Mastering Flask HTTP Methods
+## Course 2: Mastering Flask HTTP Methods
 
 ### GET
 
@@ -421,7 +423,7 @@ def handle_user(user_id):
         return jsonify(error="User not found"), 404
 ```
 
-## Flask Data Modeling with Marshmallow
+## Course 3: Flask Data Modeling with Marshmallow
 
 > https://codesignal.com/learn/lesson/3010
 > 
@@ -660,7 +662,9 @@ Validation Error JSON Response:
 }
 ```
 
-## Securing Flask Apps with JWT Authentication 
+## Course 4: Securing Flask Apps with JWT Authentication 
+
+### Lesson 1: Creating a Basic Login Endpoint
 
 ```py
 from flask import Flask, request, jsonify
@@ -707,6 +711,58 @@ def login():
     else:
         # Return an error if the user does not exist or the password is incorrect
         return jsonify(error="Bad username or password"), 401
+```
+
+### Lesson 2: Generating JWT Tokens Upon Login
+
+- JWT (JSON web tocken):
+  - compact, URL-safe means of representing claims between 2 parties (client & server)
+  - 3 parts: 
+    - header: metadata, ex: type, hashing algo
+    - payload: actual data or claims, ex: user info, token expiration time
+    - signature: ensures token integrity via secret key
+
+- `pip install flask-jwt-extended`
+
+```py
+from flask_jwt_extended import JWTManager
+
+# Set the secret key for signing JWTs
+app.config['JWT_SECRET_KEY'] = 'super-secret' 
+
+# Initialize the JWTManager with the Flask app
+jwt = JWTManager(app)
+```
+
+returning generated JWT on Login:
+- Import create_access_token
+- Generate Access Token: Create access token using create_access_token(identity=username)
+- Return Access JWT token in the JSON response
+
+```py
+from flask_jwt_extended import create_access_token
+
+# Define a route to receive login credentials
+@app.route('/login', methods=['POST'])
+def login():
+    # -- previous input validation and user verification code goes here --
+
+    # Check if the user exists and if the password matches
+    if user and user["password"] == password:
+        # Create an access token for the user
+        access_token = create_access_token(identity=username)
+        # Return the access token with a success message
+        return jsonify(access_token=access_token), 200
+    else:
+        # Return an error if the user does not exist or the password is incorrect
+        return jsonify(error="Bad username or password"), 401
+```
+
+successful login request response:
+```json
+{
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+}
 ```
 
 

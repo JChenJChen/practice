@@ -39,6 +39,13 @@ name="World"
 echo "$greeting, $name!"  # Prints: Hello, World!
 ```
 
+Correctly Naming Variables:
+- Variable names must begin with a letter (a-z, A-Z) or an underscore (_).
+- After the first character, variable names can include letters, numbers (0-9), and underscores, but no other special characters.
+- Variable names cannot contain spaces or special characters like !, @, #, $, %, ^, &, *, (, ), -, +, =, etc.
+- Variable names are case-sensitive.
+- Do not use reserved words or keywords: if, then, else, fi, for, while, etc.
+
 ```sh
 # Numeric Comparison
 num1=5
@@ -68,6 +75,22 @@ echo $?  # 0 (true)
 echo $?  # 1 (false)
 ```
 
+
+https://codesignal.com/learn/course/558/unit/2/practice/2:
+
+```sh
+#!/bin/bash
+
+# Creating Variables
+greeting="Hello"
+name="World"
+
+# TODO: Combine 'greeting' and 'name' into a new variable called 'full_message'
+full_message="$greeting $name!"
+
+# Printing new variable
+echo $full_message
+```
 
 
 ##### LATER COURSES
