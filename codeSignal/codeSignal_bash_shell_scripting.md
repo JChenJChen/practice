@@ -207,9 +207,73 @@ echo $result # Expected output: 1
 - https://codesignal.com/learn/lesson/3932
 
 
+#### Control structures (if, elif, else)
+
+- if
+- elif
+- else
+
+- conditions must be enclosed in `[]`. 
+- After condition, `then` keyword specifies code to execute if the condition evaluates to 0 (true).
+- control structures must start with an `if` statement, and end with `fi`
+  - `elif` and `else` statements are optional.
+
+```sh
+if [ condition1 ]
+then
+    # Commands to execute if condition1 is true
+elif [ condition2 ]
+then
+    # Commands to execute if condition1 is false and condition2 is true
+else
+    # Commands to execute if both condition1 and condition2 are false
+fi
+```
+
+#### Logical Operators (&&, ||)
+
+- && (AND)
+```sh
+#!/bin/bash
+# Variables
+num1=10
+num2=20
+str1="Hello"
+str2="World"
+
+# Using && (AND) Operator
+if [ $num1 -lt $num2 ] && [ "$str1" != "$str2" ]
+then
+    echo "num1 is less than num2 AND str1 is not equal to str2"  # Prints: "num1 is less than num2 AND str1 is not equal to str2"
+else
+    echo "Condition is false"  # This won't execute
+fi
+``` 
+
+- || (OR)
+
+```sh
+#!/bin/bash
+
+# Variables
+num1=10
+num2=20
+
+# Using || (OR) Operator
+if [ $num1 -gt 5 ] || [ $num2 -lt 5 ]
+then
+    echo "num1 is greater than 5 OR num2 is less than 5"  # Prints: "num1 is greater than 5 OR num2 is less than 5"
+else
+    echo "Neither condition is true"  # This won't execute
+fi
+```
+
 ### Lesson 5: Arrays and Looping Constructs in Shell Scripting
 
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/arrays-and-looping-constructs-in-shell-scripting
+- https://codesignal.com/learn/lesson/3933
+
+
 
 ### Lesson 6: Functions in Shell Scripts
 
