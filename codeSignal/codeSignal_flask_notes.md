@@ -5,10 +5,10 @@
 - https://codesignal.com/learn/paths/apis-made-easy-with-python-and-flask
 
 4 lessons, 20 lessons:
-1. Introduction to Flask Basics - 6 lessons
-2. Mastering Flask HTTP Methods - 5 lessons
-3. Flask Data Modeling with Marshmallow - 5 lessons
-4. Securing Flask Apps with JWT Authentication - 4 lessons
+1. [Introduction to Flask Basics](https://codesignal.com/learn/courses/introduction-to-flask-basics) - 6 lessons
+2. [Mastering Flask HTTP Methods](https://codesignal.com/learn/courses/mastering-flask-http-methods) - 5 lessons
+3. [Flask Data Modeling with Marshmallow](https://codesignal.com/learn/courses/flask-data-modeling-with-marshmallow) - 5 lessons
+4. [Securing Flask Apps with JWT Authentication](https://codesignal.com/learn/courses/securing-flask-apps-with-jwt-authentication) - 4 lessons
 
 course path skills:
 - developing:
@@ -19,6 +19,9 @@ course path skills:
   - Authentication, Authorization, & Security
 
 ## Course 1: Introduction to Flask Basics
+
+- https://codesignal.com/learn/courses/introduction-to-flask-basics
+- https://codesignal.com/learn/lesson/2999
 
 ### CodeSignal FileSystem Setup
 .sh, .py
@@ -181,6 +184,8 @@ for endpoint in endpoints:
 
 ### GET
 
+- https://codesignal.com/learn/lesson/3005
+
 ```py
 # TODO: Import the Flask class from the flask package
 from flask import Flask
@@ -219,6 +224,8 @@ gunicorn options:
 
 #### Routes & Decorators
 
+- https://codesignal.com/learn/lesson/3003
+
 ```py
 # Define a route with a decorator
 @app.route('/hello')
@@ -249,6 +256,9 @@ return jsonify(message="Hey there! This is a JSON response!")
 
 
 #### Path Parameters:
+
+- https://codesignal.com/learn/lesson/3004
+
 ```py
 @app.route('/greet/<str:first_name>/<int:age>', methods=['GET'])
 def greet_full_name(first_name, age):
@@ -371,6 +381,8 @@ def delete_user(user_id):
 
 ### Endpoint that accepts & combines multiple HTTP request types 
 
+- https://codesignal.com/learn/lesson/3009
+
 Instead of having separate GET, PUT, and DELETE endpoints for individual users, all these operations now reside at /users/<int:user_id>.
 - Endpoint Without ID: This combines GET to retrieve all users and POST to create a new user.
 - Endpoint With ID: This combines GET, PUT, and DELETE for operations on individual users specified by their ID.
@@ -433,6 +445,8 @@ def handle_user(user_id):
 - `fields.Email()`: Represents an email, ensuring valid email format.
 
 ### Defining Schemas and Serializing Data with Marshmallow
+
+- https://codesignal.com/learn/lesson/3010
 
 - integration library: `integration library`
 - standalone version (used in course): `pip install marshmallow`
@@ -663,6 +677,8 @@ Validation Error JSON Response:
 ```
 
 ## Course 4: Securing Flask Apps with JWT Authentication 
+
+- https://codesignal.com/learn/lesson/3016
 
 ### Lesson 1: Creating a Basic Login Endpoint
 
