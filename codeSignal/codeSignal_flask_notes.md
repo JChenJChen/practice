@@ -765,7 +765,120 @@ successful login request response:
 }
 ```
 
+All together:
 
+```py
+from flask import Flask, request, jsonify
+from flask_jwt_extended import JWTManager, create_access_token
+from marshmallow import Schema, fields, ValidationError
+from marshmallow.validate import Length
+
+# Initialize a Flask app instance
+app = Flask(__name__)
+
+# Mock database of users
+database = [
+    {"id": 1, "username": "cosmo", "password": "space-corgi"}
+]
+
+# Define a schema for validating login data
+class LoginSchema(Schema):
+    username = fields.Str(required=True, validate=Length(min=1))
+    password = fields.Str(required=True, validate=Length(min=1))
+
+# Create an instance of LoginSchema
+login_schema = LoginSchema()
+
+# Set the secret key for signing JWTs
+app.config['JWT_SECRET_KEY'] = 'super-secret' 
+
+# Initialize the JWTManager with the Flask app
+jwt = JWTManager(app)
+
+# Define a route to receive login credentials
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        # Validate and deserialize the input data according to the schema
+        data = login_schema.load(request.get_json())
+    except ValidationError as err:
+        # If validation fails, return an error message and a 400 status code
+        return jsonify(error=err.messages), 400
+
+    # Extract username and password from the validated data
+    username = data['username']
+    password = data['password']
+
+    # Find the user in the mock database
+    user = next((user for user in database if user["username"] == username), None)
+    
+    # Check if the user exists and if the password matches
+    if user and user["password"] == password:
+        # Create an access token for the user
+        access_token = create_access_token(identity=username)
+        # Return the access token with a success message
+        return jsonify(access_token=access_token), 200
+    else:
+        # Return an error if the user does not exist or the password is incorrect
+        return jsonify(error="Bad username or password"), 401
+```
+
+lesson 2 practice 3:
+```py
+from flask import Flask, request, jsonify
+from flask_jwt_extended import JWTManager, create_access_token
+from marshmallow import Schema, fields, ValidationError
+from marshmallow.validate import Length
+
+# Initialize a Flask app instance
+app = Flask(__name__)
+
+# Mock database of users
+database = [
+    {"id": 1, "username": "cosmo", "password": "space-corgi"}
+]
+
+# Define a schema for validating login data
+class LoginSchema(Schema):
+    username = fields.Str(required=True, validate=Length(min=1))
+    password = fields.Str(required=True, validate=Length(min=1))
+
+# Create an instance of LoginSchema
+login_schema = LoginSchema()
+
+# Set the secret key for signing JWTs
+app.config['JWT_SECRET_KEY'] = 'super-secret'
+
+# Initialize the JWTManager with the Flask app
+jwt = JWTManager(app)
+
+# Define a route to receive login credentials
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        # Validate and deserialize the input data according to the schema
+        data = login_schema.load(request.get_json())
+    except ValidationError as err:
+        # If validation fails, return an error message and a 400 status code
+        return jsonify(error=err.messages), 400
+
+    # Extract username and password from the validated data
+    username = data['username']
+    password = data['password']
+
+    # Find the user in the mock database
+    user = next((user for user in database if user["username"] == username), None)
+    
+    # Check if the user exists and if the password matches
+    if user and user["password"] == password:
+        # Create an access token for the user
+        access_token = create_access_token(identity=username)
+        # Return the access token with a success message
+        return jsonify(access_token=access_token), 200
+    else:
+        # Return an error if the user does not exist or the password is incorrect
+        return jsonify(error="Bad username or password"), 401
+```
 
 ---
 

@@ -53,6 +53,7 @@ num2=2
 sum=$(($num1 + $num2)) # $(()) evaluate the arithmetic expression within
 echo $sum  # Prints: 7
 ```
+- arithmetic operations: +, -, *, /, and %
 
 - String comparisons:
     - `==` or `=`: Equal to
@@ -75,23 +76,34 @@ echo $?  # 0 (true)
 echo $?  # 1 (false)
 ```
 
+Common Arithmetic Mistakes:
+```sh
+num1=2
+num2=5
 
-https://codesignal.com/learn/course/558/unit/2/practice/2:
+x=num1+num2
+echo $x  # Prints: "num1+num2"
 
+y=$num1+$num2
+echo $y  # Prints: "2+5"
+```
+
+lesson 2 practice 4
 ```sh
 #!/bin/bash
 
-# Creating Variables
-greeting="Hello"
-name="World"
+num1=10
+num2=3
 
-# TODO: Combine 'greeting' and 'name' into a new variable called 'full_message'
-full_message="$greeting $name!"
+variable_names=num1%num2
+echo $variable_names # Expected output: num1%num2
 
-# Printing new variable
-echo $full_message
+expression=$num1%$num2
+echo $expression # Expected output: 10%3
+
+result=$(($num1%$num2))
+echo $result # Expected output: 1
 ```
-
 
 ##### LATER COURSES
 
