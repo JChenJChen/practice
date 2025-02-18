@@ -182,25 +182,6 @@ str1="Hello World"
 [ $str1 == "Hello World" ]  # [ Hello == Hello World ]
 ```
 
-- https://codesignal.com/learn/lesson/3932
-
-lesson 2 practice 4
-```sh
-#!/bin/bash
-
-num1=10
-num2=3
-
-variable_names=num1%num2
-echo $variable_names # Expected output: num1%num2
-
-expression=$num1%$num2
-echo $expression # Expected output: 10%3
-
-result=$(($num1%$num2))
-echo $result # Expected output: 1
-```
-
 ### Lesson 4: Control Structures and Logical Operators in Shell Scripting
 
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/control-structures-and-logical-operators-in-shell-scripting

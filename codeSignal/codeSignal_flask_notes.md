@@ -896,6 +896,32 @@ def login():
         return jsonify(error="Bad username or password"), 401
 ```
 
+### Lesson 3: Securing an Endpoint with JWT
+
+- Configuring the Protected Endpoint: `@jwt_required` decorator from the `Flask-JWT-Extended` library
+```py
+from flask_jwt_extended import jwt_required
+
+# Define a route that requires a valid JWT to access
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected_route():
+    return jsonify(message="This is a protected route, and you are authenticated!"), 200
+```
+
+- JSON request without valid JWT token in authorization header:
+```json
+{"msg": "Missing Authorization Header"} 
+```
+
+- Making a Successful Request with a JWT:
+  1. Client sends login request to obtain JWT
+  2. Request includes JWT in `Authorization` header &rarr; `Authorization: Bearer <your-token>`
+  3. `/protected` endpoint returns success response:
+```json
+{"message": "This is a protected route, and you are authenticated!"}
+```
+
 ---
 
 # chatGPT: REST API in Python - copying code practice
