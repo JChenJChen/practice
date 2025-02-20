@@ -842,7 +842,7 @@ def login():
 lesson 2 practice 3:
 ```py
 from flask import Flask, request, jsonify
-from flask_jwt_extended import JWTManager, create_access_token
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required
 from marshmallow import Schema, fields, ValidationError
 from marshmallow.validate import Length
 
@@ -918,8 +918,76 @@ def protected_route():
   1. Client sends login request to obtain JWT
   2. Request includes JWT in `Authorization` header &rarr; `Authorization: Bearer <your-token>`
   3. `/protected` endpoint returns success response:
-```json
-{"message": "This is a protected route, and you are authenticated!"}
+
+Access Tokens vs Refresh Tokens:
+- Access Tokens: 
+  - short-lived tokens used to authorize access to protected resources. They are 
+  - included in API request headers. Typically, for endpoints that require user authentication (ex: /profile, /dashboard)
+- Refresh Tokens: 
+  - longer-lived, used to get new access tokens without needing the user to log in again
+  - used on token refresh route (ex: /refresh), to obtain a new access token when old one expires.
+  - to acquire new access tokens -- NOT used for direct resource access
+
+Setting Duration Times
+```py
+from datetime import timedelta
+
+# Examples of durations
+seconds = timedelta(seconds=30)  # 30 seconds
+minutes = timedelta(minutes=5)  # 5 minutes
+hours = timedelta(hours=1)  # 1 hour
+days = timedelta(days=1)  # 1 day
+weeks = timedelta(weeks=1)  # 1 week
+custom = timedelta(days=2, hours=3, minutes=15)  # 2 days, 3 hours, and 15 minutes
+```
+
+Configuring Token Expiration Times
+```py
+from datetime import timedelta
+
+# Set the expiry time for access tokens (15 minutes)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+# Set the expiry time for refresh tokens (1 hour)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(hours=1)
+```
+
+Generating Access Token & Refresh Tokens
+```py
+from flask_jwt_extended import create_access_token, create_refresh_token
+
+# Existing login route to include token generation
+@app.route('/login', methods=['POST'])
+def login():
+    # -- previous input validation and user verification code goes here --
+    
+    # Check if the user exists and if the password matches
+    if user and user["password"] == password:
+        # Create a JWT access token
+        access_token = create_access_token(identity=username)
+        # Create a JWT refresh token
+        refresh_token = create_refresh_token(identity=username)
+
+        # Return the tokens as a JSON response
+        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+    else:
+        # Return an error if the user does not exist or the password is incorrect
+        return jsonify(error="Bad username or password"), 401
+```
+
+Token refresh route
+```py
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
+# Define a refresh route that requires a valid refresh token to access
+@app.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    # Get the identity of the current user from the JWT refresh token
+    current_user = get_jwt_identity()
+    # Create a new access token
+    new_access_token = create_access_token(identity=current_user)
+    # Return the new access token as a JSON response
+    return jsonify(access_token=new_access_token), 200
 ```
 
 ---
