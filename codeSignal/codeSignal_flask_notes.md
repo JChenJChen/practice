@@ -990,8 +990,90 @@ def refresh():
     return jsonify(access_token=new_access_token), 200
 ```
 
----
+All together:
 
+```py
+from flask import Flask, request, jsonify
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
+from marshmallow import Schema, fields, ValidationError
+from marshmallow.validate import Length
+from datetime import timedelta
+
+# Initialize a Flask app instance
+app = Flask(__name__)
+
+# Mock database of users
+database = [
+    {"id": 1, "username": "cosmo", "password": "space-corgi"}
+]
+
+# Define a schema for validating login data
+class LoginSchema(Schema):
+    username = fields.Str(required=True, validate=Length(min=1))
+    password = fields.Str(required=True, validate=Length(min=1))
+
+# Create an instance of LoginSchema
+login_schema = LoginSchema()
+
+# Set the secret key for signing JWTs
+app.config['JWT_SECRET_KEY'] = 'super-secret' 
+
+# Initialize the JWTManager with the Flask app
+jwt = JWTManager(app)
+
+# Set the expiry time for access tokens (15 minutes)
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=15)
+# Set the expiry time for refresh tokens (1 hour)
+app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(hours=1)
+
+# Define a route to receive login credentials
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        # Validate and deserialize the input data according to the schema
+        data = login_schema.load(request.get_json())
+    except ValidationError as err:
+        # If validation fails, return an error message and a 400 status code
+        return jsonify(error=err.messages), 400
+
+    # Extract username and password from the validated data
+    username = data['username']
+    password = data['password']
+
+    # Find the user in the mock database
+    user = next((user for user in database if user["username"] == username), None)
+    
+    # Check if the user exists and if the password matches
+    if user and user["password"] == password:
+        # Create a JWT access token and refresh token
+        access_token = create_access_token(identity=username)
+        refresh_token = create_refresh_token(identity=username)
+        # Return the tokens as a JSON response
+        return jsonify(access_token=access_token, refresh_token=refresh_token), 200
+    else:
+        # Return an error if the user does not exist or the password is incorrect
+        return jsonify(error="Bad username or password"), 401
+
+# Define a refresh route that requires a valid refresh token to access
+@app.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    # Get the identity of the current user from the JWT refresh token
+    current_user = get_jwt_identity()
+    # Create a new access token
+    new_access_token = create_access_token(identity=current_user)
+    # Return the new access token as a JSON response
+    return jsonify(access_token=new_access_token), 200
+
+# Define a protected route that requires a valid JWT access token to access
+@app.route('/protected', methods=['GET'])
+@jwt_required()
+def protected_route():
+    return jsonify(message="This is a protected route, and you are authenticated!"), 200
+```
+
+
+---
 # chatGPT: REST API in Python - copying code practice
 ```py
 from flask import Flask, request, jsonify
