@@ -122,7 +122,9 @@ https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/less
     - `-ge`: Greater than or equal to
     - `-le`: Less than or equal to
 - For each comparison (-eq, -ne, -gt, -lt, -ge, -le), the result is checked, and the exit status is printed using echo $?.
-- echo $? prints 0 for true and 1 for false.
+- echo $? prints:
+  -  0 for true 
+  -  1 for false
 
 ```sh
 #!/bin/bash
@@ -166,26 +168,7 @@ restricted_name="example.txt"
 file_name="hello.txt"
 
 # TODO: Change comparison operator to check if file_size is less than or equal to available_space
-[ $file_size -lt $available_space ]
-echo "Is there enough space for the file? $?" # Expected output: Is there enough space for the file? 0
-
-# TODO: Change comparison operator to check if restricted_name is equal to file_name
-[ "$restricted_name" = "$file_name" ]
-echo "Is the file name restricted? $?" # Expected output: Is the file name restricted? 1
-```
-
-### BKMK:L3P2
-```sh
-#!/bin/bash
-
-file_size=10
-available_space=20
-
-restricted_name="example.txt"
-file_name="hello.txt"
-
-# TODO: Change comparison operator to check if file_size is less than or equal to available_space
-[ $file_size -lt $available_space ]
+[ $file_size -le $available_space ]
 echo "Is there enough space for the file? $?" # Expected output: Is there enough space for the file? 0
 
 # TODO: Change comparison operator to check if restricted_name is equal to file_name
@@ -251,6 +234,46 @@ str1="Hello World"
 [ $str1 == "Hello World" ]  # [ Hello == Hello World ]
 ```
 
+##### L3P2
+```sh
+#!/bin/bash
+
+file_size=10
+available_space=20
+
+restricted_name="example.txt"
+file_name="hello.txt"
+
+# TODO: Change comparison operator to check if file_size is less than or equal to available_space
+[ $file_size -le $available_space ]
+echo "Is there enough space for the file? $?" # Expected output: Is there enough space for the file? 0
+
+# TODO: Change comparison operator to check if restricted_name is equal to file_name
+[ "$restricted_name" = "$file_name" ]
+echo "Is the file name restricted? $?" # Expected output: Is the file name restricted? 1
+```
+
+
+##### [U3P3](https://codesignal.com/learn/course/558/unit/3/practice/3)
+```sh
+#!/bin/bash
+
+newest_version=5
+current_version=4
+
+[ $newest_version -gt $current_version ]
+echo "Does version need to be updated: $?"
+
+admin_name="Cosmo Admin"
+[ "$admin_name" == "Cosmo Admin" ]
+echo "Is the user an admin? $?"
+```
+> NOTE: quotes around string variable to be compared
+
+
+
+
+
 ### Lesson 4: Control Structures and Logical Operators in Shell Scripting
 
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/control-structures-and-logical-operators-in-shell-scripting
@@ -263,7 +286,7 @@ str1="Hello World"
 - elif
 - else
 
-- conditions must be enclosed in `[]`. 
+- conditions must be enclosed in `[]`, padded with spaces
 - After condition, `then` keyword specifies code to execute if the condition evaluates to 0 (true).
 - control structures must start with an `if` statement, and end with `fi`
   - `elif` and `else` statements are optional.
@@ -318,6 +341,26 @@ else
 fi
 ```
 
+##### U4P3
+```sh
+#!/bin/bash
+
+available_memory=2048
+download_size=1048
+admin_password="password"
+user_password="password"
+
+if [ $available_memory -ge $download_size ] && [ "$admin_password" == "$user_password" ] 
+then
+    echo "Download allowed"
+elif [ $available_memory -ge $download_size ] || [ "$admin_password" == "$user_password" ]
+then
+    echo "There is either not enough space or password is incorrect"
+else
+    echo "Not enough memory and incorrect password"
+fi
+```
+
 String interpolation
 ```sh
 #!/bin/bash
@@ -334,7 +377,190 @@ echo "$greeting, $name!"  # Prints: Hello, World!
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/arrays-and-looping-constructs-in-shell-scripting
 - https://codesignal.com/learn/lesson/3933
 
+#### Arrays in sh
 
+- arrays syntax
+```sh
+#!/bin/bash
+computers=("Dell" "HP" "Lenovo")
+```
+
+- add elements to array using `+=`
+```sh
+#!/bin/bash
+computers=("Dell" "HP" "Lenovo")
+computers+=("Mac")
+```
+
+- Array Length and Printing
+    - `${#array_name[@]}` - access array length
+    - `${array_name[@]}` - print array contents
+
+```sh
+#!/bin/bash
+computers=("Dell" "HP" "Lenovo")
+computers+=("Mac")
+echo "Number of computers: ${#computers[@]}"
+echo "All computers: ${computers[@]}"
+```
+returns:
+```
+Number of computers: 4
+All computers: Dell HP Lenovo Mac
+```
+
+- Array Indexing
+  - 0 indexed
+  - `${array_name[index_number]}`
+
+
+#### While Loops in sh
+
+- while loop syntax:
+```sh
+#!/bin/bash
+while [ condition ]
+do
+    command1
+    command2
+    ...
+done
+```
+
+- while loop syntax example
+```sh
+#!/bin/bash
+
+counter=1
+
+# Start the while loop
+while [ $counter -le 3 ]
+do
+    echo "Counter: $counter" 
+    # Increment the counter
+    ((counter++))
+done
+```
+
+#### For Loops in sh
+
+- For Loop syntax:
+```sh
+#!/bin/bash
+for ((initialization; condition; update))
+do
+  commands
+done
+```
+
+- For Loop syntax example
+```sh
+#!/bin/bash
+for ((x=1; x<=3; x++))
+do
+  echo "Iteration $x"
+done
+```
+
+#### For In Loops in sh
+
+- For In loop syntax
+  - {start..end} - range/list syntax
+```sh
+#!/bin/bash
+for variable in list
+do
+    command1
+    command2
+    ...
+done
+```
+
+- For In loop syntax example
+```sh
+#!/bin/bash
+# Script to demonstrate for loop
+for i in {1..5}
+do
+  echo "Iteration $i"
+done
+```
+
+```sh
+#!/bin/bash
+
+operating_systems=("Windows" "macOS" "Linux")
+
+for ((i=0; i<${#operating_systems[@]}; i++))
+do
+  echo "OS $i: ${operating_systems[$i]}"
+done
+```
+
+#### Looping Thru Arrays
+- `for in` with `"${array_name[@]}"` - iterate over array elements
+```sh
+#!/bin/bash
+# Looping through array
+computers=("Dell" "HP" "Lenovo")
+
+for computer in "${computers[@]}"
+do
+    echo "$computer"
+done
+```
+
+#### Unit 5 Practices
+
+All Together
+```sh
+#!/bin/bash
+# Declare Array
+operating_systems=("Windows" "macOS" "Linux")
+
+# While Loop
+echo "Starting while loop"
+index=0
+while [ $index -le 2 ]
+do
+    echo "OS $index: ${operating_systems[$index]}"
+    ((index++))
+done
+
+# For loop
+echo "Starting for loop on range"
+for i in {0..2}
+do
+  echo "OS $i: ${operating_systems[$i]}"
+done
+
+# Looping through array
+echo "Starting for loop on array"
+for os in "${operating_systems[@]}"
+do
+    echo "$os"
+done
+```
+
+##### BOOKMARK: U5P4
+```sh
+#!/bin/bash
+# Declare and Use Array
+file_names=("example.txt" "hello.py")
+# TODO: Add a file "index.html" to the file_names array
+file_names+=("index.html")
+# TODO: Print the number of files
+echo "Number of files: ${#file_names[@]}"
+
+# TODO: Print the file_names array
+echo "All files: ${file_names[@]}"
+
+# Loop through the array and print each file name
+for file in "${file_names[@]}"
+do
+    echo "$file"
+done
+```
 
 ### Lesson 6: Functions in Shell Scripts
 
