@@ -393,8 +393,8 @@ computers+=("Mac")
 ```
 
 - Array Length and Printing
-    - `${#array_name[@]}` - access array length
-    - `${array_name[@]}` - print array contents
+    - ${#array_name[@]} - access array length
+    - ${array_name[@]} - print array contents
 
 ```sh
 #!/bin/bash
@@ -411,7 +411,7 @@ All computers: Dell HP Lenovo Mac
 
 - Array Indexing
   - 0 indexed
-  - `${array_name[index_number]}`
+  - ${array_name[index_number]}
 
 
 #### While Loops in sh
@@ -542,7 +542,7 @@ do
 done
 ```
 
-##### BOOKMARK: U5P4
+##### U5P4
 ```sh
 #!/bin/bash
 # Declare and Use Array
@@ -562,12 +562,330 @@ do
 done
 ```
 
+##### U5P5
+```sh
+#!/bin/bash
+applications=("Photos" "Email" "Calendar")
+update_needed=("Yes" "No" "Yes")
+
+# TODO: Add "Browser" to `applications`
+applications+=("Browser")
+# TODO: Update the `update_needed` array. "Browser" does not need to be updated
+update_needed+=("No")
+# TODO: Loop through the arrays. If an update is needed print "Updating <application>". If an update is not needed, print "<application> up to date"
+# for application in "${applications[@]}"
+# for update in "${update_needed[@]}"
+for i in {0..3}
+do
+    if [ "${update_needed[$i]}" = "Yes" ]
+    then
+        echo "Updating ${applications[$i]}"
+    else
+        echo "${applications[$i]} up to date"
+    fi
+done
+```
+
 ### Lesson 6: Functions in Shell Scripts
 
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/functions-in-shell-scripts
+- https://codesignal.com/learn/lesson/3934
+
+#### Defining and Calling Functions
+
+- defining functions syntax
+```sh
+#!/bin/bash
+# Defining a function
+function_name() {
+  # Commands to be executed
+}
+
+# Calling the function
+function_name
+```
+
+- defining functions syntax example
+```sh
+#!/bin/bash
+# Defining a function
+greet() {
+  echo "Hello"
+}
+
+greet
+```
+
+#### Passing Arguments to Functions
+
+```sh
+#!/bin/bash
+# Function with 1 input
+update_one() {
+  echo "Updating $1"
+}
+
+# Function with 2 inputs
+update_two() {
+    echo "Updating $1 and $2"
+}
+
+update_one "Photos"
+update_two "Photos" "Browser"
+```
+
+#### Counting Arguments with `$#`
+
+```sh
+#!/bin/bash
+# Function to count arguments
+count_args() {
+    echo "Number of arguments: $#"
+}
+
+count_args "Photos" "Browser" "Documents"
+```
+
+#### Iterating Over Arguments Using Arrays and `$@`
+
+- convert arguments to an array using args=("$@")
+
+```sh
+#!/bin/bash
+print_args() {
+  arr=("$@")
+  
+  echo "Using array indices:"
+  for x in "${arr[@]}"
+   do
+    echo "$x"
+  done
+  
+  echo "Using \$@:"
+  for y in "$@"
+  do
+    echo "$y"
+  done
+}
+
+print_args "Photos" "Browser" "Documents"
+```
+
+#### Returning Values from Functions
+
+```sh
+#!/bin/bash
+# Function to increase a version number
+increase_version() {
+  ((version += increment))
+  echo $version
+}
+
+version=2
+increment=3
+# Capture the return value using command substitution
+result=$(increase_version)          
+echo "Updating from version $version to $result"   # Prints: "Updating from version 2 to 5"
+```
+
+##### U6P1
+```sh
+#!/bin/bash
+
+greet() {
+  echo "Hello, $1!"
+}
+
+greet "World"
+
+add_file() {
+    num=$1
+    ((num++))
+    echo $num
+}
+
+num_files=5
+num_files=$(add_file $num_files)
+echo "Number of files is $num_files"
+```
+
+##### U6P2
+```sh
+#!/bin/bash
+#!/bin/bash
+
+# TODO: Modify the add_one function to take two parameters and return their sum.
+add_one_number() {
+    num1=$1
+    num2=$2
+    echo $(($num1 + $number2))
+}
+
+number1=5
+number2=3
+
+# TODO: Modify the function call to pass two parameters
+result=$(add_one_number $number1 $number2)
+
+# TODO: Adjust the print statement to reflect the new function
+echo "Adding $number1 and $number2 gives: $result" # Expected output: Adding 5 and 3 gives: 8
+```
+
+##### U6P4
+```sh
+#!/bin/bash
+update_apps() {
+  # TODO: Convert the arguments to an array and assign it to the variable apps
+  apps=("$@")
+  
+  # TODO: Loop through the "apps" array
+  for app in "${apps[@]}"
+  do
+    echo "Checking $app"
+  done
+  
+  # TODO: Loop through the positional arguments without using the "apps" array
+  for app in "$@"
+  do
+    echo "Updating $app"
+  done
+}
+
+update_apps "Photos" "Browser" "Documents"
+```
+
+###### U6P5
+```sh
+#!/bin/bash
+
+# TODO: Define the `increase_file_size` function
+increase_file_size() {
+# The function should accept three parameters: filename, current size in bytes, and bytes to increase.
+    filename=$1
+    cur_size=$2
+    bytes_to_inc=$3
+    new_size=$(($cur_size+$bytes_to_inc))
+# It should calculate the new size and echo a message in the format: "File {filename} is now {new_size} bytes".
+    # echo 
+    echo "File $filename is now $new_size bytes"
+}
+
+# TODO: Define the `validate_files` function
+validate_files() {
+# The function should accept multiple filenames as parameters.
+    filenames=("$@")
+# It should iterate through each filename and echo a validation message in the format: "{filename} validated".
+    for filename in "${filenames[@]}"
+    do
+        echo "$filename validated"
+    done
+}
+
+# TODO: Call the `increase_file_size` function with "index.html", 1024, and 2048 as arguments
+# Store the result in a variable and echo the result.
+result=$(increase_file_size "index.html" 1024 2048)
+echo $result
+# TODO: Call the `validate_files` function with "hello.py" and "main.cpp" as arguments
+validate_files "hello.py", "main.cpp"
+```
+
+## Course 2: Intermediate Shell Scripting with Bash
+- https://codesignal.com/learn/course/559/unit/1
+- https://codesignal.com/learn/lesson/3935
+
+### Lesson 1: File Operations
+- https://codesignal.com/learn/courses/intermediate-shell-scripting-with-bash/lessons/file-operations
+- https://codesignal.com/learn/lesson/3935
+
+#### Creating a File
+```sh#!/bin/bash
+touch example.txt
+```
+
+#### Writing to a File
+```txt
+command > filename
+```
+
+```sh
+#!/bin/bash
+echo "Hello, World!" > example.txt
+```
+
+#### Displaying the Content of a File
+```sh
+#!/bin/bash
+cat example.txt
+```
+
+#### Copying a File
+```txt
+cp source destination
+```
+
+```sh
+#!/bin/bash
+cp example.txt example_copy.txt
+```
+
+#### Removing a File
+```sh
+#!/bin/bash
+rm example.txt
+```
+
+#### Clearing the Contents of a File
+```sh
+#!/bin/bash
+> example_copy.txt
+```
+
+### Lesson 2: Input, Output, and Redirection
+- https://codesignal.com/learn/courses/intermediate-shell-scripting-with-bash/lessons/input-output-and-redirection?
+- https://codesignal.com/learn/lesson/3936
+
+#### stdin, stdout, and stderr
+- standard input, output, error
+
+#### Redirecting Output to a File
+- > : overwrites the contents of the file
+- >> : appends to file
+
+#### Appending the Contents of One File to Another
+- cat file1 >> file2
+
+#### Reading from a File Line by Line
+```sh
+#!/bin/bash
+while read line; do
+    echo "$line"
+done < destination.txt
+```
+
+#### `|` (Pipeline) Operator
+- passes output of first command as input to next command
+
+#### Using a Pipeline to Process Input
+- wc : counts lines, words (-w), and characters
+```sh
+#!/bin/bash
+cat destination.txt | wc -w
+```
+
+### Lesson 3: Directory Operations
+- https://codesignal.com/learn/courses/intermediate-shell-scripting-with-bash/lessons/directory-operations
+- https://codesignal.com/learn/lesson/3937
+
+### Lesson 4: Environment Variables in Bash
+- https://codesignal.com/learn/courses/intermediate-shell-scripting-with-bash/lessons/environment-variables-in-bash
+- https://codesignal.com/learn/lesson/3938
+
+
+## Course 3: System Automation with Shell Scripts
+- https://codesignal.com/learn/courses/system-automation-with-shell-scripts
+- 
 
 ## Course 4: Bash Script Error Handling
-
 - https://codesignal.com/learn/courses/bash-script-error-handling
 
 
