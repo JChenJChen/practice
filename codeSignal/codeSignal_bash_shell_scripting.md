@@ -872,17 +872,412 @@ done < destination.txt
 cat destination.txt | wc -w
 ```
 
+- all together:
+```sh
+#!/bin/bash
+
+# Redirecting initial log entry to server.log (overwrite if exists)
+echo "Server started." > server.log
+
+# Appending a user login entry to server.log
+echo "User login successful" >> server.log
+
+# Redirecting an error message to error.log (overwrite if exists)
+echo "Error: Unable to connect" > error.log
+
+# Appending the contents of error.log to server.log
+cat error.log >> server.log
+
+# Initialize a counter to number the log entries
+counter=1
+# Reading from server.log file line by line
+while read line; do
+    # Print the line number and the line content
+    echo "$counter. $line"
+    # Increment the counter
+    ((counter++))
+done < server.log
+
+# Print the number of words in server.log
+echo "Number of words:"
+cat server.log | wc -w
+```
+
+output:
+```
+1. Server started.
+2. User login successful
+3. Error: Unable to connect
+Number of words:
+9
+```
+
+- loop through each line, count the number of words in that line, and place the output in a file called result.txt
+```sh
+#!/bin/bash
+
+# Redirecting output to a file
+echo "Greetings" > file.txt
+
+# Appending output to the file
+echo "Hello World" >> file.txt
+
+echo "Welcome to Bash" >> file.txt
+
+# Creating result.txt file
+touch result.txt
+echo "Word Counts by Line" > result.txt
+
+# TODO: Read each line from file.txt, count the words, and append the count to result.txt
+counter=1
+while read line; do
+   echo "$line" | wc -w >> result.txt
+done < file.txt
+# echo $counter >> result.txt
+cat result.txt
+```
+
+##### U2P5
+```sh
+#!/bin/bash
+
+# Defining the square function to read from stdin
+square() {
+    # Clearing the contents of output.txt
+    > output.txt
+    while read number; do
+        echo "The square of $number is $((number*number))" >> output.txt
+    done
+}
+
+
+# TODO: Create input.txt and add numbers 1, 2, and 3 to it
+> input.txt
+# echo 1 > input.txt
+# echo 2 >> input.txt
+# echo 3 >> input.txt
+for i in {1..3}
+do
+    echo $i >> input.txt
+done
+cat input.txt
+# TODO: Use a pipeline to pass the contents of input.txt to the square function
+cat input.txt | square
+# TODO: Display the contents of output.txt
+cat output.txt
+```
+
 ### Lesson 3: Directory Operations
 - https://codesignal.com/learn/courses/intermediate-shell-scripting-with-bash/lessons/directory-operations
 - https://codesignal.com/learn/lesson/3937
+
+- Directory
+- Directory structure diagram
+- CWD: `pwd`
+- ls
+- mkdir [-p] &rarr; -p creates nonexistent parent dirs, will not fail if dir already exists.
+- removing dirs:
+  - rmdir &rarr; only if dir is empty
+  - rm -r
+- cd
+
+- intro all together example:
+```sh
+#!/bin/bash
+
+# Print working directory
+echo "Current working directory: $(pwd)"
+echo 
+
+# Creating a new directory named projects
+mkdir -p projects
+
+# Changing to the projects directory
+cd projects
+
+# Creating a new directory named project1 inside projects
+mkdir -p project1
+
+# Changing to the project1 directory
+cd project1
+
+# Creating a new file named file1.txt inside project1
+touch file1.txt
+
+# Creating a new directory named project_draft inside projects
+mkdir -p ../project_draft
+
+# Creating a new file named draft.txt inside project_draft
+touch ../project_draft/draft.txt
+
+# Listing files and directories inside projects
+echo "Listing files and directories inside the projects directory"
+ls ..
+echo 
+
+# Removing the directory project_draft and its contents
+echo "Removing project_draft directory"
+rm -r ../project_draft
+echo 
+
+# Moving up one directory level to projects
+cd ..
+
+# Listing files and directories inside projects
+echo "Listing files and directories inside the projects directory"
+ls
+```
 
 ### Lesson 4: Environment Variables in Bash
 - https://codesignal.com/learn/courses/intermediate-shell-scripting-with-bash/lessons/environment-variables-in-bash
 - https://codesignal.com/learn/lesson/3938
 
+- printenv: lists all system-wide & custom env vars set for current shell session
+- common built-in env vars (echo $[VAR]):
+  - HOME: home dir &rarr; `/root`
+  - SHELL: path of current shell &rarr; `/bin/bash`
+  - PWD: current working dir &rarr; `/usercode/FILESYSTEM`
+  - PATH: which dirs to search for executables
+    - /root/.nvm/versions/node/v18.12.1/bin: Directory containing Node.js executables.
+    - /usr/local/sbin: Directory for local system administrator binaries.
+    - /usr/local/bin: Directory for locally installed executables.
+    - /usr/sbin: Directory for essential system binaries for root.
+    - /usr/bin: Directory for user binaries.
+    - /sbin: Directory for essential system binaries.
+    - /bin: Directory for essential user binaries.
+- export MY_VAR="Hello, Bash!" &rarr; creates or modifies env var
+- export PATH="$PATH:/usercode/FILESYSTEM"  &rarr; Add new dir to PATH
+- chmod +x greet.sh &rarr; ensures script is executable
+
+- all together example:
+```sh
+#!/bin/bash
+
+# Commonly Used Built-in Environment Variables
+echo "Home Directory: $HOME"
+echo "Shell Directory: $SHELL"
+echo "Current working directory $PWD"
+
+# The PATH variable
+echo "PATH is:"
+echo $PATH
+echo
+
+# Creating USER environment variable
+export USER="Cosmo"
+
+# Adding to PATH variable
+export PATH="$PATH:/usercode/FILESYSTEM"
+
+# Calling greet_user script
+chmod +x greet_user.sh
+echo "Calling greet_user.sh"
+greet_user.sh
+```
+
+####
+```sh
+#!/bin/bash
+
+# TODO: Create an environment variable called USER with any value
+export USER="any_value"
+# TODO: Update PATH to include the my_scripts directory
+export PATH="$PATH:/usercode/FILESYSTEM/my_scripts"
+# TODO: Update permissions of greet.sh 
+chmod +x my_scripts/greet.sh
+
+# TODO: Run greet.sh script
+my_scripts/greet.sh
+
+# TODO: Update permissions of update.sh
+chmod +x my_scripts/update.sh
+
+# TODO: Run update.sh script
+my_scripts/greet.sh
+```
+
 
 ## Course 3: System Automation with Shell Scripts
 - https://codesignal.com/learn/courses/system-automation-with-shell-scripts
+
+### Lesson 1: Updating System Packages
+- https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/updating-system-packages
+- https://codesignal.com/learn/lesson/3939
+
+- Packages: 
+  - collections of files, metadata, and scripts used to install software on a computer
+  - bundle all the components necessary to run a program, including: 
+    - binaries
+    - configuration files
+    - documentation
+    - dependencies
+- Repositories:
+  - structured storage locations where software packages are retrieved and installed 
+  - centralized, where developers upload and users download software packages
+  - package management systems (PMS): handle installation, upgrade, configuration, and removal of packages. 
+    - Advanced Packaging Tool (APT): a package management system on Debian-based Linux distributions (ex: Ubuntu)
+    - `apt-get`: APT command-line tool that handles packages in shell scripts
+
+- apt list --installed: see the list of installed packages
+
+output:
+```txt
+...
+bash/focal-updates,focal-security,now 5.0-6ubuntu1.2 amd64 [installed]
+git/now 1:2.43.0-0ppa1~ubuntu20.04.1 amd64 [installed,upgradable to: 1:2.45.2-0ppa1~ubuntu20.04.1]
+...
+```
+explanation of output:
+- bash: The name of the package.
+- focal-updates,focal-security: The repositories where this version of the package is available
+- now: Indicates the status of the package (currently installed).
+- 5.0-6ubuntu1.2: The version of the package that is installed.
+- amd64: The architecture for which the package is built (64-bit in this case).
+- [installed]: Indicates that the package is currently installed on your system.
+
+- sudo apt-get update: fetches package list from repos and stores them locally, to update the list of available packages and their versions, but **does not install or upgrade them**
+output:
+```
+Hit:1 http://archive.ubuntu.com/ubuntu focal InRelease
+Hit:2 http://repo.mysql.com/apt/ubuntu focal InRelease
+Hit:3 http://archive.ubuntu.com/ubuntu focal-updates In Release
+....
+Reading package lists... Done
+```
+explanation of output:
+- Hit:1 indicates that the repository at position 1 in the list of sources was successfully accessed.
+- http://archive.ubuntu.com/ubuntu: The URL of the Ubuntu repository.
+- focal: The codename for the Ubuntu release (Focal Fossa, 20.04).
+- InRelease: Indicates that the repository provides an InRelease file, which is a signed metadata file combining the Release file and its signature.
+
+
+- sudo apt-get upgrade: 
+  - installs latest versions of all installed packages based on the updated package lists fetched by sudo apt-get update
+  - Maintains Configuration Files: If package configuration files have been modified -- prompts whether to keep the existing or replace with newer versions
+  - `-s` flag simulates upgrade -- sees which packages get upgraded
+output:
+```
+Inst base-files [11ubuntu5.7]... -- package will be installed or upgraded
+
+Conf base-files --after the package `base-files` is upgraded, it will be configured to integrate w/ the system.
+```
+
+script combining everything:
+```sh
+#!/bin/bash
+# Comprehensive script to update system packages
+echo "Listing all packages"
+apt list --installed  # Shows all installed packages
+
+echo "Updating package lists..."
+sudo apt-get update # Updates package lists from the repositories
+
+echo "Listing packages that will be upgraded..."
+sudo apt-get -s upgrade # Simulates the package upgrade
+```
+
+practice 1 full example:
+```sh
+#!/bin/bash
+# Script to update system packages
+echo "Listing all packages"
+apt list --installed > package_list.txt
+
+echo "Updating package lists..."
+sudo apt-get update > updated_list.txt
+
+echo "Listing packages that will be upgraded..."
+sudo apt-get -s upgrade  > upgrades.txt
+```
+
+### Lesson 2: User Management
+- https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/user-management
+- https://codesignal.com/learn/lesson/3940
+
+- /etc/passwd: 
+  - where list of users is saved
+  - 1st (: delimited) line reserved for superuser: `root:x:0:0:root:/root:/bin/bash`
+  - The 1st field root is the username. This is the traditional name for the superuser.
+The 6th field is /root which is the home directory for the root user.
+The 7th field /bin/bash indicates that the root user's shell is bash.
+
+- whoami: display the username of the current user who is executing the command
+  - Each user has their own set of environment variables
+  - $HOME displays the home directory of the current user
+  - $SHELL prints the user's shell
+
+- useradd: adds a new user
+  - adduser -- alternative
+```sh
+#!/bin/bash
+# Creating and adding a new user
+username="newuser"
+
+sudo useradd -m $username
+echo "New user information: $(grep $username /etc/passwd)"
+```
+- $username: Creates a New User Account, with attributes i.e. username, password, home directory, shell, etc.
+- -m flag: Sets User Home Dir (if specified)
+- Configures Account Settings: allows setting different options like user ID (UID), group ID (GID), account expiration, etc.
+
+Some other options you can use with the useradd command are:
+
+-d /path/to/home: Specify a custom home directory instead of the default.
+-s /path/to/shell: Set the user's login shell.
+
+practice 1 all together example:
+```sh
+#!/bin/bash
+
+# Accessing all users
+cat /etc/passwd > users.txt
+
+# Print the current user and home directory
+echo "Current user: $(whoami)"
+echo "Current home directory: $HOME"
+echo "Current shell: $SHELL"
+echo "User information: $(grep $(whoami) /etc/passwd)"
+
+# Creating and adding a new user
+username="newuser"
+sudo useradd -m $username
+echo "New user information: $(grep $username /etc/passwd)"
+```
+
+
+##### BOOKMARK: U2P3
+```sh
+#!/bin/bash
+
+# Creating a directory called 'users' to store home directories of new users
+mkdir -p users
+
+# Creating and adding new users
+for username in "userA" "userB" "userC"; do
+    # Set the home directory for the new user inside the 'users' directory
+    home_dir=$PWD/users/$username
+    
+    # TODO: Create the new user with specified home directory
+    sudo useradd -m $home_dir
+    echo "New user information: $(grep $username /etc/passwd)"
+done
+
+echo
+echo "Printing subdirectories of the 'users' directory..."
+# TODO: Print the content of the users directory
+ls users
+```
+
+
+
+### Lesson 3: Disk Usage Monitoring
+- https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/disk-usage-monitoring
+- 
+### Lesson 4: Scheduling Tasks with Cron
+- https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/scheduling-tasks-with-cron
+- 
+### Lesson 5: Automating Backups
+- https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/automating-backups
 - 
 
 ## Course 4: Bash Script Error Handling
