@@ -507,12 +507,87 @@ custom_s3_resource = custom_session.resource('s3')
 ### [Lesson 2: Introduction to Boto3 Client Configurations](https://codesignal.com/learn/courses/introduction-to-aws-sdk-for-python/lessons/introduction-to-boto3-client-configurations?courseSlug=introduction-to-aws-sdk-for-python)
 - https://codesignal.com/learn/lesson/1985
 
+- practice 1 demo code:
+```py
+import boto3
+from botocore.config import Config
 
-
+custom_config = Config(retries={'max_attempts': 3, 'mode': 'standard'})
+s3_client = boto3.client('s3', endpoint_url='https://my-test-bucket.com', config=custom_config)
+```
 
 ### [Lesson 3: Navigating Boto3 Exceptions: Mastering Error Handling in AWS Operations](https://codesignal.com/learn/courses/introduction-to-aws-sdk-for-python/lessons/navigating-boto3-exceptions-mastering-error-handling-in-aws-operations?courseSlug=introduction-to-aws-sdk-for-python)
+- https://codesignal.com/learn/lesson/1986
+
+- practice 1 demo script:
+```py
+import boto3
+from botocore.exceptions import BotoCoreError, ClientError
+
+# Create an S3 client
+s3_client = boto3.client('s3')
+
+# Try to list objects of non-existent bucket
+try:
+    response = s3_client.list_objects(Bucket='non-existent-bucket')
+
+# Handle possible errors
+except ClientError as e:
+    error_code = e.response['Error']['Code']
+    if error_code == 'NoSuchBucket':
+        print("The bucket does not exist.")
+    elif error_code == 'AccessDenied':
+        print("You do not have permissions to access the bucket.")
+    else:
+        print("Unexpected error:", e.response['Error']['Message'])
+        # print(f'unexpected error: {error_code}')
+
+# Catch errors within Boto3 itself
+except BotoCoreError as e:
+    print("Boto3 error:", e)
+```
+
 
 ### [Lesson 4: Managing Logs with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-aws-sdk-for-python/lessons/managing-logs-with-aws-sdk-for-python?courseSlug=introduction-to-aws-sdk-for-python)
+- https://codesignal.com/learn/lesson/1987
+
+#### Python's logging library and Boto3
+- set_stream_logger() fn
+```py
+import boto3
+import logging
+
+logging.basicConfig(level=logging.INFO)
+boto3.set_stream_logger(name='boto3', level=logging.DEBUG) # log all Boto3 activities
+boto3.set_stream_logger(name='botocore.client.S3', level=logging.DEBUG) # focus on one service, i.e. s3 operations
+boto3.set_stream_logger(name='botocore', level=logging.DEBUG) # request and response interactions
+```
+
+- python logging levels: DEBUG, INFO, WARNING (default), ERROR, CRITICAL
+
+- practice 1 demo code:
+
+```py
+import boto3
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Initialize the boto3 S3 resource
+s3 = boto3.resource('s3')
+
+# Apply the AWS debug logging filter
+boto3.set_stream_logger('boto3', logging.DEBUG)
+
+# Create a new bucket as the initial setup is empty
+s3.create_bucket(Bucket='my-logging-test-bucket')
+
+# List buckets to show logging output
+for bucket in s3.buckets.all():
+    print(bucket.name)
+```
+
 
 ## [Course 2: Mastering Amazon S3 with AWS SDK for Python](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python)
 ### [Lesson 1: Mastering Amazon S3: Creating Sessions and Clients with Boto3](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/mastering-amazon-s3-creating-sessions-and-clients-with-boto3?courseSlug=mastering-amazon-s3-with-aws-sdk-for-python)
@@ -532,8 +607,31 @@ custom_s3_resource = custom_session.resource('s3')
 
 ## [Course 3: Introduction to DynamoDB with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python)
 
+### [Lesson 1: Setting Up Your DynamoDB Environment with Boto3 in Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/setting-up-your-dynamodb-environment-with-boto3-in-python?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+### [Lesson 2: Creating and Configuring DynamoDB Tables with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-and-configuring-dynamodb-tables-with-aws-sdk-for-python?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+### [Lesson 3: Creating Data in DynamoDB: Inserting Items with PutItem and BatchWriteItem Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-data-in-dynamodb-inserting-items-with-putitem-and-batchwriteitem-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+### [Lesson 4: Mastering Data Retrieval in DynamoDB: GetItem and BatchGetItem](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/mastering-data-retrieval-in-dynamodb-getitem-and-batchgetitem?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+### [Lesson 5: Manipulating Data in DynamoDB: Update and Delete Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/manipulating-data-in-dynamodb-update-and-delete-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+### [Lesson 6: Retrieving Multiple Objects Efficiently in DynamoDB](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/retrieving-multiple-objects-efficiently-in-dynamodb?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+
 
 ## [Course 4: Mastering Messaging with AWS SDK for Python](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python)
+
+### [Lesson 1: Mastering AWS Messaging Fundamentals with Boto3](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/mastering-aws-messaging-fundamentals-with-boto3?courseSlug=mastering-messaging-with-aws-sdk-for-python)
+
+### [Lesson 2: Creating and Configuring SQS Queues with Boto3](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/creating-and-configuring-sqs-queues-with-boto3?courseSlug=mastering-messaging-with-aws-sdk-for-python)
+
+### [Lesson 3: Mastering SQS Operations: Sending, Receiving, and Deleting Messages](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/mastering-sqs-operations-sending-receiving-and-deleting-messages?courseSlug=mastering-messaging-with-aws-sdk-for-python)
+
+### [Lesson 4: Creating and Configuring AWS SNS Topics with Python and Boto3](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/creating-and-configuring-aws-sns-topics-with-python-and-boto3?courseSlug=mastering-messaging-with-aws-sdk-for-python)
+
+### [Lesson 5: Mastering AWS Messaging: Sending and Receiving Messages with SNS and SQS](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/mastering-aws-messaging-sending-and-receiving-messages-with-sns-and-sqs?courseSlug=mastering-messaging-with-aws-sdk-for-python)
 
 
 ## [Course 5: AWS Secrets Management with AWS SDK for Python](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python)
