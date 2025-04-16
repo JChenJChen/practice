@@ -507,7 +507,7 @@ custom_s3_resource = custom_session.resource('s3')
 ### [Lesson 2: Introduction to Boto3 Client Configurations](https://codesignal.com/learn/courses/introduction-to-aws-sdk-for-python/lessons/introduction-to-boto3-client-configurations?courseSlug=introduction-to-aws-sdk-for-python)
 - https://codesignal.com/learn/lesson/1985
 
-- practice 1 demo code:
+#### p1 demo code
 ```py
 import boto3
 from botocore.config import Config
@@ -565,7 +565,7 @@ boto3.set_stream_logger(name='botocore', level=logging.DEBUG) # request and resp
 
 - python logging levels: DEBUG, INFO, WARNING (default), ERROR, CRITICAL
 
-- practice 1 demo code:
+#### p1 demo code
 
 ```py
 import boto3
@@ -590,20 +590,466 @@ for bucket in s3.buckets.all():
 
 
 ## [Course 2: Mastering Amazon S3 with AWS SDK for Python](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python)
-### [Lesson 1: Mastering Amazon S3: Creating Sessions and Clients with Boto3](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/mastering-amazon-s3-creating-sessions-and-clients-with-boto3?courseSlug=mastering-amazon-s3-with-aws-sdk-for-python)
+### [Lesson 1: Mastering Amazon S3: Creating Sessions and Clients with Boto3](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/mastering-amazon-s3-creating-sessions-and-clients-with-boto3)
+- https://codesignal.com/learn/lesson/1988
+
+- Buckets: container for objects (files) in S3. **unique across all of S3**
+- Objects: Files -- data, metadata, and a key (object name). **unique within a bucket by key and version ID**.
+- Keys: filename. combo of bucket, key, and version ID uniquely identify each object in S3.
+- Regions: When creating a bucket, need to specify AWS region where bucket resides.
+
+- custom sessions, with specific credentials and settings, to operate with different AWS configurations or to manage resources across various regions:
+
+```py
+# Create a specific AWS session for a different region
+session_us_east_1 = boto3.Session(
+    aws_access_key_id='ANOTHER_ACCESS_KEY_ID',
+    aws_secret_access_key='ANOTHER_SECRET_ACCESS_KEY',
+    region_name='us-east-1'
+)
+
+# Create a S3 resource and client using the specific session
+s3_resource_us_east_1 = session_us_east_1.resource('s3')
+s3_client_us_east_1 = session_us_east_1.client('s3')
+```
+
+- practice 1 demo script:
+
+```py
+import boto3
+
+# Create an AWS session with explicit credentials and region
+session = boto3.Session(
+    aws_access_key_id='test',
+    aws_secret_access_key='test',
+    region_name='us-west-2'
+)
+
+# Create an S3 resource based on the session
+s3_resource = session.resource('s3')
+
+# Print S3 resource details
+print("S3 resource: ", s3_resource)
+
+# Create an S3 client based on the session
+s3_client = session.client('s3')
+
+# Print S3 client details
+print("S3 client: ", s3_client)
+
+# Create a default S3 resource with the default session
+# The default session uses credentials and settings from environment variables,
+# AWS credentials and config file, or IAM role for Amazon EC2 instances
+default_s3_resource = boto3.resource('s3')
+
+# Print default S3 resource details
+print("Default S3 resource: ", default_s3_resource)
+
+# Create a default S3 client with the default session
+default_s3_client = boto3.client('s3')
+
+# Print default S3 client details
+print("Default S3 client: ", default_s3_client)
+```
 
 ### [Lesson 2: Mastering S3 Bucket Management with AWS SDK for Python](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/mastering-s3-bucket-management-with-aws-sdk-for-python?courseSlug=mastering-amazon-s3-with-aws-sdk-for-python)
+- https://codesignal.com/learn/lesson/1989
 
+
+
+#### p1 demo code
+
+```py
+import boto3
+
+s3_resource = boto3.resource('s3')
+
+s3_resource.create_bucket(Bucket='cosmo-galaxy-photos-2024') # Creating bucket in the default us-east-1 region
+s3_resource.create_bucket(Bucket='cosmo-widget-data', CreateBucketConfiguration={'LocationConstraint': 'us-west-2'})  # Creating bucket in the us-west-2 region
+s3_resource.create_bucket(Bucket='cosmo-doc-archive-2020', CreateBucketConfiguration={'LocationConstraint': 'eu-central-1'})  # Creating bucket in the eu-central-1 region
+
+print("Buckets before deletion:")
+for bucket in s3_resource.buckets.all():
+    print(bucket.name)
+
+s3_resource.Bucket('cosmo-doc-archive-2020').delete()
+
+print("\nBuckets after deletion:")
+for bucket in s3_resource.buckets.all():
+    print(bucket.name)
+    
+"""
+Expected output:
+
+Buckets before deletion:
+cosmo-galaxy-photos-2024
+cosmo-widget-data
+cosmo-doc-archive-2020
+
+Buckets after deletion:
+cosmo-galaxy-photos-2024
+cosmo-widget-data
+"""
+```
 
 ### [Lesson 3: Managing AWS S3 Objects: Upload, Download, and Delete with Python and Boto3](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/managing-aws-s3-objects-upload-download-and-delete-with-python-and-boto3?courseSlug=mastering-amazon-s3-with-aws-sdk-for-python)
+- https://codesignal.com/learn/lesson/1990
 
+#### p1 demo code
+```py
+import boto3
+import os
+
+# Initialize the boto3 S3 resource
+s3 = boto3.resource('s3')
+
+# Create a new bucket as the initial setup is empty
+s3.create_bucket(Bucket='photo-archive-2023')
+
+# Upload the image to the 'photo-archive-2023' bucket using the image already in the filesystem
+image_path = '/usercode/FILESYSTEM/assets/prompt-engineering-course-logo.jpg'
+s3.Bucket('photo-archive-2023').upload_file(image_path, 'prompt-engineering-course-logo.jpg')
+
+# List objects in the bucket before deletion
+print("Objects in bucket before deletion:")
+for obj in s3.Bucket('photo-archive-2023').objects.all():
+    print(obj.key)
+
+# Ensure the downloads folder exists
+downloads_folder = '/usercode/FILESYSTEM/downloads'
+if not os.path.exists(downloads_folder):
+    os.makedirs(downloads_folder)
+
+# Download the image from the bucket to the downloads folder
+s3.Bucket('photo-archive-2023').download_file('prompt-engineering-course-logo.jpg', f'{downloads_folder}/prompt-engineering-course-logo.jpg')
+
+# Delete the image from the bucket
+s3.Object('photo-archive-2023', 'prompt-engineering-course-logo.jpg').delete()
+
+# List objects in the bucket after deletion
+print("\nObjects in bucket after deletion:")
+for obj in s3.Bucket('photo-archive-2023').objects.all():
+    print(obj.key)
+```
+
+#### Uploading Files to s3
+```py
+import boto3
+
+s3_resource = boto3.resource('s3')
+s3_resource.Bucket('cosmo-user-uploads').upload_file('path/to/local/file.jpg', 'cosmo-profile-2023.jpg')
+```
+
+#### Listing Objects in s3
+```py
+for obj in s3_resource.Bucket('cosmo-user-uploads').objects.all():
+    print(obj.key)
+```
+
+#### Downloading files from s3
+```py
+s3_resource.Bucket('cosmo-user-uploads').download_file('cosmo-profile-2023.jpg', 'local/path/cosmo-profile.jpg')
+```
+
+### Retrieving metadata
+```py
+# Get the S3 object
+cosmo_object = s3_resource.Object('cosmo-images-archive-2023', 'cosmo-profile-2023.jpg')
+
+# Get object's metadata
+metadata = cosmo_object.metadata
+```
+
+#### Deleting files from s3
+```py
+# Deleting single object
+s3_resource.Object('cosmo-user-uploads', 'temporary-file.jpg').delete()
+
+# Deleting all objects in the bucket
+s3_resource.Bucket(bucket_name).objects.all().delete()
+```
+
+#### Handling S3 Exceptions Gracefully
+```py
+import boto3
+from botocore.exceptions import ClientError
+
+s3_resource = boto3.resource('s3')
+
+try:
+    s3_resource.Bucket('cosmo-user-uploads').delete()
+except s3_resource.meta.client.exceptions.NoSuchBucket:
+    print("Error: The specified bucket does not exist.")
+except ClientError as e:
+    # This captures other unexpected errors
+    print(f"An unexpected error occurred: {e.response['Error']['Message']}")
+```
 
 ### [Lesson 4: Mastering Multi-Part Uploads in Amazon S3 with Boto3 and Python](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/mastering-multi-part-uploads-in-amazon-s3-with-boto3-and-python?courseSlug=mastering-amazon-s3-with-aws-sdk-for-python)
+- https://codesignal.com/learn/lesson/1991
 
+#### p1 demo code
+
+```py
+import boto3
+import os
+
+# Create the S3 client
+s3_client = boto3.client('s3')
+
+# Create a new bucket
+bucket_name = 'cosmo-archive-2023'
+s3_client.create_bucket(Bucket=bucket_name)
+
+# Path to your dataset
+file_path = '/usercode/FILESYSTEM/assets/cosmo-hadoop-course-data-set.zip'
+key = 'cosmos-hadoop-course-data-set.zip'
+
+# Initiate multipart upload
+multipart_upload = s3_client.create_multipart_upload(Bucket=bucket_name, Key=key)
+upload_id = multipart_upload['UploadId']
+
+uploaded_parts = []
+
+# Open the file for reading data
+with open(file_path, 'rb') as f:
+    # Upload the first chunk
+    data = f.read(1024 * 1024 * 5)  # 5MB
+    response = s3_client.upload_part(Bucket=bucket_name, Key=key, PartNumber=1, UploadId=upload_id, Body=data)
+    uploaded_parts.append({'PartNumber': 1, 'ETag': response['ETag']})
+
+    # Upload the second chunk
+    data = f.read(1024 * 1024 * 6)  # 6MB
+    response = s3_client.upload_part(Bucket=bucket_name, Key=key, PartNumber=2, UploadId=upload_id, Body=data)
+    uploaded_parts.append({'PartNumber': 2, 'ETag': response['ETag']})
+
+    # Upload the final chunk (which is the rest of the file)
+    data = f.read()
+    response = s3_client.upload_part(Bucket=bucket_name, Key=key, PartNumber=3, UploadId=upload_id, Body=data)
+    uploaded_parts.append({'PartNumber': 3, 'ETag': response['ETag']})
+
+# Complete the multipart upload
+s3_client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': uploaded_parts})
+print("Dataset uploaded successfully in chunks of varying sizes. Multipart upload completed.")
+```
+
+#### Start a Multi-part Upload Session
+```py
+import boto3
+import os
+
+# Configure the S3 client
+s3_client = boto3.client('s3')
+bucket_name = 'my_bucket'
+file_path = 'path/to/my_large_file.zip'
+key = 'my_large_file.zip'
+
+# Start a multi-part upload session
+mpu = s3_client.create_multipart_upload(Bucket=bucket_name, Key=key)
+parts = []
+upload_id = mpu['UploadId']
+```
+
+#### Calculate the Number of Parts and Perform Upload
+
+> **NOTE:** size of each part (except the last): >=5MB && <5GB
+
+```py
+# Set the part size to 5 MB
+part_size = 1024 * 1024 * 5
+# Retrieve the total file size
+file_size = os.path.getsize(file_path)
+# Calculate the total number of parts needed for the upload
+part_count = (file_size + part_size - 1) // part_size
+
+# Open the file in binary read mode
+with open(file_path, 'rb') as f:
+    # Iterate over each part
+    for part_no in range(1, part_count + 1):
+        # Read the specified part size from the file
+        data = f.read(part_size)
+        # Upload the part to S3 and receive a response containing the ETag
+        response = s3_client.upload_part(Bucket=bucket_name, Key=key, PartNumber=part_no, UploadId=upload_id, Body=data)
+        # Append the part number and ETag to the 'parts' list for later reference in completing the upload
+        parts.append({'PartNumber': part_no, 'ETag': response['ETag']})
+```
+
+#### Complete the multi-part upload
+```py
+s3_client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': parts})
+```
+
+
+#### practice 2 multi-part upload code all together:
+```py
+import boto3
+import os
+
+# Initialize the S3 client
+s3_client = boto3.client('s3')
+
+# Create a new bucket for your uploads
+bucket_name = 'cosmo-archive-2023'
+s3_client.create_bucket(Bucket=bucket_name)
+
+# Path to your dataset
+file_path = '/usercode/FILESYSTEM/assets/cosmo-hadoop-course-data-set.zip'
+key = 'cosmos-hadoop-course-data-set.zip'
+
+
+# TODO: Initiate a multipart upload session
+mpu = s3_client.create_multipart_upload(Bucket=bucket_name, Key=key)
+uploaded_parts = []
+upload_id = mpu['UploadId']
+part_size = 1024*1024*5
+file_size = os.path.getsize(file_path)
+part_count = (file_size + part_size -1 ) // part_size
+# TODO: Upload the dataset in 5 MB chunks using a loop
+with open(file_path, 'rb') as f:
+    for part_no in range(1, part_count + 1):
+        data = f.read(part_size)
+        response = s3_client.upload_part(Bucket=bucket_name, Key=key, PartNumber=part_no, UploadId=upload_id, Body=data)
+        uploaded_parts.append({'PartNumber': part_no, 'ETag': response['ETag']})
+        # data = f.read()
+# TODO: Complete the multipart upload by combining all the uploaded parts
+s3_client.complete_multipart_upload(Bucket=bucket_name, Key=key, UploadId=upload_id, MultipartUpload={'Parts': uploaded_parts})
+```
 
 ### [Lesson 5: Mastering File Versioning and Management in Amazon S3 with Boto3](https://codesignal.com/learn/courses/mastering-amazon-s3-with-aws-sdk-for-python/lessons/mastering-file-versioning-and-management-in-amazon-s3-with-boto3?courseSlug=mastering-amazon-s3-with-aws-sdk-for-python)
+- https://codesignal.com/learn/lesson/1992
+
+#### p1 demo code
+```py
+import boto3
+
+# Initialize the Boto3 S3 resource and client
+s3_resource = boto3.resource('s3')
+s3_client = boto3.client('s3')
+
+# Create the bucket 'cosmo-archive-data' with versioning enabled
+bucket_name = 'cosmo-archive-data'
+bucket = s3_resource.create_bucket(Bucket=bucket_name)
+
+# Enable versioning for the 'cosmo-archive-data' bucket
+s3_resource.BucketVersioning(bucket_name).enable()
+
+# Upload 'version1.txt' and print its version ID
+obj_key = 'versioned_document.txt'
+obj_v1 = bucket.Object(obj_key)
+response_v1 = obj_v1.put(Body='This is the content of version 1.')
+print(f"Uploaded 'version1.txt' with version ID: {response_v1['VersionId']}")
+
+# Upload 'version2.txt' and print its version ID
+obj_v2 = bucket.Object(obj_key)
+response_v2 = obj_v2.put(Body='This is the content of version 2.')
+print(f"Uploaded 'version2.txt' with version ID: {response_v2['VersionId']}")
+
+# Retrieve the latest version of the document without specifying the version ID
+latest_version = bucket.Object(obj_key).version_id
+print(f"Retrieved latest version of 'versioned_document.txt': {latest_version}")
+
+# Retrieve and print 'version1.txt' using its version ID
+specific_version = s3_client.get_object(
+    Bucket=bucket_name,
+    Key=obj_key,
+    VersionId=response_v1['VersionId']
+)
+print(f"Retrieved 'versioned_document.txt' with a specific version ID: {response_v1['VersionId']}")
+
+# Download and print 'version1.txt' using its version ID
+s3_client.download_file(bucket_name, obj_key, 'version1.txt', ExtraArgs={'VersionId': response_v1['VersionId']})
+
+# Now, let's open and print the content of the downloaded file.
+with open('version1.txt', 'r') as file:
+    print(file.read())
+
+# Download the latest version
+s3_resource.Bucket(bucket_name).download_file(Key=obj_key, Filename='latest_version.txt')
+
+# Now, let's open and print the content of the downloaded latest version file.
+with open('latest_version.txt', 'r') as file:
+    print(file.read())
+```
 
 
+```py
+import boto3
+
+# Create a session with your AWS credentials
+session = boto3.Session(
+    aws_access_key_id='your_access_key',
+    aws_secret_access_key='your_secret_key',
+)
+
+# Enable versioning on a bucket
+s3_resource = session.resource('s3')
+bucket_versioning = s3_resource.BucketVersioning('my_bucket')
+bucket_versioning.enable()
+
+
+# Suspending versioning on a bucket
+bucket_versioning.suspend()
+print('Bucket versioning has been suspended.')
+
+
+# get status
+versioning_status = bucket_versioning.status
+print('Versioning Status:', versioning_status)
+# Enabled/Suspended/None
+
+
+# Uploading Objects to Version-Enabled Buckets
+# uploading a file:
+filename = 'example.txt'
+bucket_name = 'my_bucket'
+s3_resource.Bucket(bucket_name).upload_file(Filename=filename, Key=filename)
+print(f'{filename} has been uploaded.')
+
+# directly putting contents into an object:
+content = "Hello, World!"
+s3_resource.Object(bucket_name, 'example.txt').put(Body=content)
+print('Content has been directly uploaded.')
+
+
+
+# Retrieving and Downloading Objects from Version-Enabled Buckets
+# just get latest version object:
+obj = s3_resource.Object(bucket_name, filename).get()
+print('Retrieved latest object version:', obj)
+
+
+# dl with specifying key & filename:
+downloaded_file = 'downloaded_example.txt'
+s3_resource.Bucket(bucket_name).download_file(Key=filename, Filename=downloaded_file)
+print(f'{filename} has been downloaded as {downloaded_file}.')
+
+
+# retrieve the specific version of an object:
+# Retrieving a specific version of an object using the client interface
+s3_client = session.client('s3')
+response_v1 = s3_client.get_object(Bucket='my_bucket', Key='example.txt', VersionId='your_version_id_here')
+print('Retrieved specific object version:', response_v1)
+
+# Reading the content of the retrieved object version
+content = response_v1['Body'].read().decode('utf-8')
+print('Content of the retrieved version:', content)
+
+
+# Downloading a specific version of the object
+
+#  download the specified version directly to a file with `download_file` method (specify ExtraArgs & VersionId):
+s3_client.download_file('my_bucket', 'example.txt', 'example_specific_version.txt', ExtraArgs={'VersionId': response_v1['VersionId']})
+print('Specific version of the object has been downloaded as example_specific_version.txt.')
+
+
+# Listing Available Versions of an Object
+s3_client = session.client('s3')
+versions = s3_client.list_object_versions(Bucket='my_bucket', Prefix='example.txt')
+
+for version in versions.get('Versions', []):
+    print('Key:', version['Key'], 'VersionId:', version['VersionId'], 'LastModified:', version['LastModified'], 'IsLatest:', version['IsLatest'])
+
+```
 
 ## [Course 3: Introduction to DynamoDB with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python)
 

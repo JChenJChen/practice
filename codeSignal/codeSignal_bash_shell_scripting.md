@@ -1245,7 +1245,7 @@ echo "New user information: $(grep $username /etc/passwd)"
 ```
 
 
-##### BOOKMARK: U2P3
+##### U2P3
 ```sh
 #!/bin/bash
 
@@ -1258,7 +1258,7 @@ for username in "userA" "userB" "userC"; do
     home_dir=$PWD/users/$username
     
     # TODO: Create the new user with specified home directory
-    sudo useradd -m $home_dir
+    sudo useradd -m -d $home_dir $username
     echo "New user information: $(grep $username /etc/passwd)"
 done
 
@@ -1272,10 +1272,293 @@ ls users
 
 ### Lesson 3: Disk Usage Monitoring
 - https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/disk-usage-monitoring
-- 
+- https://codesignal.com/learn/lesson/3941
+
+#### P1 Demo Code
+- https://codesignal.com/learn/course/560/unit/3/practice/1
+```sh
+#!/bin/bash
+
+# Directory to monitor
+FILESYSTEM="/tmp"
+
+# Clear any previous files
+rm -rf /tmp/big_files
+
+# Display the disk usage of the filesystem containing the /tmp directory.
+echo "Filesystem usage:"
+df $FILESYSTEM
+echo 
+
+echo "Filesystem usage with -h"
+df -h $FILESYSTEM
+echo
+
+# Display the disk usage of all files and directories under /tmp
+echo "Directory usage with -h"
+du -h $FILESYSTEM
+echo
+
+echo "Directory usage with -sh"
+du -sh $FILESYSTEM
+echo
+
+# Create a new directory with a big file, and print out disk usage statistics
+echo "Creating a 10 MB file"
+mkdir -p $FILESYSTEM/big_files
+fallocate -l 10M $FILESYSTEM/big_files/10MB_file
+
+echo
+echo "Directory usage after creating file"
+du -h $FILESYSTEM
+```
+#### Disk Usage of Filesystems with df
+
+- `df`: overview of filesystem disk space usage, ex: total, used, & available space, % used space.
+  - No filepath: all mounted filesystems; specify filepath for only that filesystem.
+  - `-h` flag: human-readable output
+
+```sh
+#!/bin/bash
+
+# Directory to monitor
+FILESYSTEM="/usercode/FILESYSTEM"
+
+# Display the disk usage of the filesystem containing the /usercode/FILESYSTEM directory
+df $FILESYSTEM
+df -h $FILESYSTEM
+```
+
+> output:
+```txt
+Filesystem     1K-blocks     Used Available Use% Mounted on
+/dev/vda1      650206116 54170548 596019184   9% /usercode/FILESYSTEM
+
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda1       621G   52G  569G   9% /usercode/FILESYSTEM
+```
+
+#### Disk Usage of Files and Directories with du
+
+- `du`: estimate disk usage of files and directories
+  - `-sh`: total disk usage summary for specified directory in human-readable format
+    - total disk usage of the entire directory at the top level -- does not list individual items.
+
+```sh
+#!/bin/bash
+
+# Display the disk usage of all files and directories under /usercode/FILESYSTEM
+echo "Using -h option"
+du -h $FILESYSTEM
+echo ""
+echo "Using -sh option"
+du -sh $FILESYSTEM
+```
+
+> output:
+```txt
+Using -h option
+12K	/usercode/FILESYSTEM/.codesignal
+20K	/usercode/FILESYSTEM
+
+Using -sh option
+20K	/usercode/FILESYSTEM
+```
+
+#### Creating and Managing Large Files
+
+- `fallocate`: useful for creating large file quickly & ensures disk space is available by preallocating space to a file.
+  - `fallocate -l <size> <filename>`
+    - `-l <size>`: specifies file size to be -- in bytes, KB (e.g., 10K), MB (e.g., 10M), GB (e.g., 10G), etc.
+
+```sh
+#!/bin/bash
+
+# Create a new directory with a big file, and print out disk usage statistics
+mkdir -p $FILESYSTEM/big_files
+fallocate -l 10G $FILESYSTEM/big_files/10GB_file
+echo "Using -h option"
+du -h $FILESYSTEM
+echo 
+echo "Using -sh option"
+du -sh $FILESYSTEM
+```
+
+> output:
+```txt
+Using -h option
+11G	/usercode/FILESYSTEM/big_files
+12K	/usercode/FILESYSTEM/.codesignal
+11G	/usercode/FILESYSTEM
+
+Using -sh option
+11G	/usercode/FILESYSTEM
+```
+
+
 ### Lesson 4: Scheduling Tasks with Cron
 - https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/scheduling-tasks-with-cron
-- 
+- https://codesignal.com/learn/lesson/3942
+
+- `cron` alternatives: `at`, `systemd timers`
+- cron jobs: cron scheduled tasks to be executed at specific times or intervals.
+- crontabs (cron tables): stores cron job configurations.
+  - each system user can have own crontab.
+  - `root` user manages system-wide crontab.
+
+#### cron syntax
+```txt
+* * * * * command_to_execute
+│ │ │ │ │
+│ │ │ │ └──── Day of the week (0 - 7) (both 0 and 7 mean Sunday)
+│ │ │ └────── Month (1 - 12)
+│ │ └──────── Day of the month (1 - 31)
+│ └────────── Hour (0 - 23)
+└──────────── Minute (0 - 59)
+```
+- A single number: 5 means "exactly at five".
+- A range of numbers: 1-5 means "1 to 5".
+- A list of numbers: 1,2,3 means "1 or 2 or 3".
+- An asterisk (*) wildcard means "every" possible value of this field.
+- /: Specifies step values. For example, */5 in the minutes field means "every 5 minutes".
+
+##### cron syntax examples:
+every day at 5 AM:
+```txt
+0 5 * * * /path/to/script.sh
+```
+
+every Monday at 3 PM
+```txt
+0 15 * * 1 /path/to/script.sh
+```
+
+every 15 minutes
+```txt
+*/15 * * * * /path/to/script.sh
+```
+
+every day at midnight
+```txt
+0 0 * * * /path/to/nightly_backup.sh
+```
+
+10 PM on the 1st of every month
+```txt
+0 22 1 * * /path/to/monthly_job.sh
+```
+
+#### Creating a Simple Cron Job
+
+`print_time.sh` -- prints current date and time to `time.txt`:
+```sh
+#!/bin/bash
+TARGET_DIR="/usercode/FILESYSTEM"
+OUTPUT_FILE="$TARGET_DIR/time.txt"
+echo $(date) >> $OUTPUT_FILE
+```
+> NOTE: relative paths work, but absolute path's preferred.
+
+#### Scheduling Cron Jobs Syntax
+- by appending to crontab
+- `crontab -l`: displays user's crontab file contents -- all scheduled tasks and corresponding schedules.
+
+```sh
+(crontab -l; echo "<command>" ) | crontab -
+```
+- `crontab -l`: lists the current user's cron jobs.
+- `echo "<command>"`: creates a new line with the specified cron command
+- parentheses group the two commands together so that they are treated as a single unit.
+- `| crontab` - pipelines the combined output of the grouped commands to the crontab command.
+
+#### Scheduling A Cron Job
+- `schedule_task.sh`: set up and schedule `print_time.sh` script as a cron job
+```sh
+#!/bin/bash
+
+# Specify script path and give execute permissions
+SCRIPT_PATH="$PWD/print_time.sh" # absolute path
+chmod +x $SCRIPT_PATH # makes script executable
+
+# Start cron
+sudo service cron start
+# Verify cron has started
+service cron status
+
+# Create the cron command
+command="*/1 * * * * $SCRIPT_PATH" # runs every minute
+
+# Append the cron job; handle the case when there's no existing crontab
+(crontab -l; echo "$command" ) | crontab -
+
+# Confirm cron job was added
+crontab -l
+```
+
+output:
+```txt
+ * Starting periodic command scheduler cron
+   ...done.
+ * cron is running
+*/1 * * * * /usercode/FILESYSTEM/print_time.sh
+```
+
+time.txt:
+```txt
+Mon Jul 29 00:06:01 UTC 2024
+Mon Jul 29 00:07:01 UTC 2024
+Mon Jul 29 00:08:01 UTC 2024
+```
+
+
+#### P1 Demo Code
+- https://codesignal.com/learn/course/560/unit/4/practice/1
+
+solution.sh:
+```sh
+#!/bin/bash
+
+SCRIPT_PATH="$PWD/print_time.sh"
+chmod +x $SCRIPT_PATH
+
+# Start cron services
+sudo service cron start
+service cron status
+
+# Create the cron command
+command="*/1 * * * * $SCRIPT_PATH"
+
+# Append the cron job to crontab
+(crontab -l; echo "$command" ) | crontab -
+
+# Confirm cron job was added
+echo "Printing cron jobs..."
+crontab -l
+```
+
+print_time.sh:
+```sh
+#!/bin/bash
+TARGET_DIR="/usercode/FILESYSTEM"
+OUTPUT_FILE="$TARGET_DIR/time.txt"
+echo $(date) >> $OUTPUT_FILE
+```
+
+output saved to time.txt:
+```txt
+Wed Apr 16 16:15:01 UTC 2025
+```
+
+stdout:
+```txt
+ * Starting periodic command scheduler cron
+   ...done.
+ * cron is running
+Printing cron jobs...
+
+*/1 * * * * /usercode/FILESYSTEM/print_time.sh
+```
+
 ### Lesson 5: Automating Backups
 - https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/automating-backups
 - 
