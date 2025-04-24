@@ -1561,7 +1561,60 @@ Printing cron jobs...
 
 ### Lesson 5: Automating Backups
 - https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/automating-backups
-- 
+- https://codesignal.com/learn/lesson/3943
+
+#### P1 Demo Code
+```sh
+#!/bin/bash
+# Script to automate backups
+
+source_dir="$(pwd)/data"
+backup_dir="$(pwd)/backups/data_$(date '+%Y-%m-%d_%H-%M-%S')" # data_YYYY-MM-DD_HH-MM-SS
+
+mkdir -p $backup_dir
+cp -r $source_dir/* $backup_dir/
+echo "Backup completed: $backup_dir"
+ls backups/ 
+```
+
+output:
+```txt
+Backup completed: /usercode/FILESYSTEM/backups/data_2025-04-21_20-29-00
+data_2025-04-21_20-29-00
+```
+
+#### P5 Solution
+```sh
+#!/bin/bash
+#!/bin/bash
+
+# TODO: Create directories named 'data' and 'logs'
+data_dir="$(pwd)/data"
+logs_dir="$(pwd)/logs"
+mkdir -p $data_dir
+mkdir -p $logs_dir
+# TODO: Add text files 'd1.txt' and 'd2.txt' to 'data' directory with the text "File D1" and "File D2" respectively
+echo "File D1" > "$data_dir/d1.txt"
+echo "File D2" > "$data_dir/d2.txt"
+# TODO: Add log files 'l1.log' and 'l2.log' to 'logs' directory with the text "Log L1" and "Log L2" respectively
+echo "Log L1" > "$logs_dir/l1.txt"
+echo "Log L2" > "$logs_dir/l2.txt"
+# TODO: Define source directories for data and logs
+
+# TODO: Create backup directories with a timestamp for both data and logs
+backup_data_dir="$(pwd)/backups/data_$(date '+%Y-%m-%d_%H-%M-%S')"
+backup_logs_dir="$(pwd)/backups/logs_$(date '+%Y-%m-%d_%H-%M-%S')"
+mkdir -p $backup_data_dir
+mkdir -p $backup_logs_dir
+# TODO: Copy all files from the source directories to their respective backup directories
+cp -r $data_dir/* $backup_data_dir/
+cp -r $logs_dir/* $backup_logs_dir/
+# TODO: List the contents of the 'backups' directory to confirm successful backup
+ls backups/
+# OUTPUT:
+# logs_2025-04-24_22-17-07
+# data_2025-04-24_22-17-07
+```
 
 ## Course 4: Bash Script Error Handling
 - https://codesignal.com/learn/courses/bash-script-error-handling
