@@ -1618,6 +1618,8 @@ ls backups/
 
 ## Course 4: Bash Script Error Handling
 - https://codesignal.com/learn/courses/bash-script-error-handling
+- https://codesignal.com/learn/lesson/3944
+
 
 
 ## Course 5: Text Processing with Bash
