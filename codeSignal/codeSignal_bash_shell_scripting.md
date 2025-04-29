@@ -1565,6 +1565,30 @@ Printing cron jobs...
 */1 * * * * /usercode/FILESYSTEM/print_time.sh
 ```
 
+#### P2 Solution
+- add a timestamp to the backup_dir variable:
+```sh
+#!/bin/bash
+# Script to automate backups
+mkdir -p data
+echo "Data 1" > data/d1.txt
+echo "Data 2" > data/d2.txt
+
+source_dir="$(pwd)/data"
+backup_dir="$(pwd)/backups/$(date '+%Y-%m-%d_%H-%M-%S')/data"
+
+mkdir -p $backup_dir
+cp -r $source_dir/* $backup_dir/
+echo "Backup completed: $backup_dir"
+ls backups/
+```
+
+output:
+```txt
+Backup completed: /usercode/FILESYSTEM/backups/2025-04-22_17-42-12/data
+2025-04-22_17-42-12
+```
+
 ### Lesson 5: Automating Backups
 - https://codesignal.com/learn/courses/system-automation-with-shell-scripts/lessons/automating-backups
 - https://codesignal.com/learn/lesson/3943
@@ -1651,6 +1675,12 @@ echo "Exit status: $?"
 ```
 
 #### The `exit` Command
+- 1: General errors.
+- 2: Misuse of shell builtins (according to the Bash documentation).
+- 126: Command invoked cannot execute.
+- 127: Command not found.
+- 128: Invalid argument to exit.
+- 130: Script terminated by Control-C.
 
 ```sh
 #!/bin/bash
@@ -1658,12 +1688,133 @@ echo "Exiting with a custom status (42)..."
 exit 42
 ```
 
-- 1: General errors.
-- 2: Misuse of shell builtins (according to the Bash documentation).
-- 126: Command invoked cannot execute.
-- 127: Command not found.
-- 128: Invalid argument to exit.
-- 130: Script terminated by Control-C.
+#### Handling Exit Statuses with Conditional Statements
+
+```sh
+#!/bin/bash
+
+# Attempting to create a directory that already exists
+echo "Attempting to create a directory..."
+mkdir projects
+status=$? # returns 1 bc directory already exists
+
+if [ $status -eq 0 ]; then
+  echo "Directory created successfully."
+  exit 0
+else
+  echo "Failed to create directory."
+  echo "Exit status: $status"
+  exit $status
+fi
+
+# stdout:
+# Attempting to create a directory...
+# Failed to create directory.
+# Exit status: 1
+
+# stderr:
+# mkdir: cannot create directory ‘projects’: File exists
+```
+
+#### Using `set -e` for Immediate Exit on Errors
+
+- useful for preventing your script from continuing in an erroneous state
+
+```sh
+#!/bin/bash
+
+set -e
+
+echo "Running a command that will fail..."
+ls nonexistent_directory
+# set -e ends execution here and prevents unnecessary cd cmd
+echo "This line will not be executed if the ls command fails."
+cd nonexistent_directory
+
+# stdout:
+# Running a command that will fail...
+
+# stderr:
+# ls: cannot access 'nonexistent_directory': No such file or directory
+```
+
+#### L1P3 Solution Scripts
+
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Make the scripts executable
+chmod +x custom_exit.sh
+chmod +x set_e.sh
+
+# Run the custom_exit.sh script with parameter 'John'
+echo "Calling custom_exit.sh with John"
+./custom_exit.sh John
+
+# Print the exit status of the 'custom_exit.sh' script
+echo "Exit status of custom_exit.sh: $?" 
+echo
+
+# Run the set_e.sh script
+echo "Running set_e.sh"
+./set_e.sh
+echo "Exit Status of set_e.sh: $?"
+```
+
+- custom_exit.sh:
+```sh
+#!/bin/bash
+
+# Get the first argument passed to the script
+name=$1
+
+# Check if the provided name is "Cosmo" and provide exit status
+if [ $name == "Cosmo" ]; then
+  echo "  Welcome $name" 
+  exit 0 
+else
+  # Print access denied message
+  echo "  Sorry $name. Access denied" 
+  exit 42
+fi
+```
+
+- set_e.sh:
+```sh
+#!/bin/bash
+
+# Enable exit on error
+set -e
+echo "  Running a command that will fail..."
+ls nonexistent_directory
+
+
+# echo "ls: cannot access 'nonexistent_directory': No such file or directory"
+echo "This line will not be executed if the ls command fails."
+cd nonexistent_directory
+```
+
+- output:
+```txt
+Calling custom_exit.sh with John
+  Sorry John. Access denied
+Exit status of custom_exit.sh: 42
+
+Running set_e.sh
+  Running a command that will fail...
+Exit Status of set_e.sh: 2
+```
+
+- stderr:
+```txt
+ls: cannot access 'nonexistent_directory': No such file or directory
+```
+
+
+
+
+- https://codesignal.com/learn/lesson/3945
 
 ## Course 5: Text Processing with Bash
 
