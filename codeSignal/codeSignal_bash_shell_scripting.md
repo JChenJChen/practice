@@ -903,7 +903,7 @@ echo "Number of words:"
 cat server.log | wc -w
 ```
 
-output:
+stdout:
 ```
 1. Server started.
 2. User login successful
@@ -1120,7 +1120,7 @@ my_scripts/greet.sh
 
 - apt list --installed: see the list of installed packages
 
-output:
+stdout:
 ```txt
 ...
 bash/focal-updates,focal-security,now 5.0-6ubuntu1.2 amd64 [installed]
@@ -1135,14 +1135,20 @@ explanation of output:
 - amd64: The architecture for which the package is built (64-bit in this case).
 - [installed]: Indicates that the package is currently installed on your system.
 
-- sudo apt-get update: fetches package list from repos and stores them locally, to update the list of available packages and their versions, but **does not install or upgrade them**
-output:
-```
-Hit:1 http://archive.ubuntu.com/ubuntu focal InRelease
-Hit:2 http://repo.mysql.com/apt/ubuntu focal InRelease
-Hit:3 http://archive.ubuntu.com/ubuntu focal-updates In Release
-....
-Reading package lists... Done
+
+
+```sh
+# fetch package list from repos and store them locally
+# to update the list of available packages and their versions, but **does not install or upgrade them**:
+sudo apt-get update
+
+# stdout:
+
+# Hit:1 http://archive.ubuntu.com/ubuntu focal InRelease
+# Hit:2 http://repo.mysql.com/apt/ubuntu focal InRelease
+# Hit:3 http://archive.ubuntu.com/ubuntu focal-updates In Release
+# ....
+# Reading package lists... Done
 ```
 explanation of output:
 - Hit:1 indicates that the repository at position 1 in the list of sources was successfully accessed.
@@ -1155,7 +1161,7 @@ explanation of output:
   - installs latest versions of all installed packages based on the updated package lists fetched by sudo apt-get update
   - Maintains Configuration Files: If package configuration files have been modified -- prompts whether to keep the existing or replace with newer versions
   - `-s` flag simulates upgrade -- sees which packages get upgraded
-output:
+stdout:
 ```
 Inst base-files [11ubuntu5.7]... -- package will be installed or upgraded
 
@@ -1329,7 +1335,7 @@ df $FILESYSTEM
 df -h $FILESYSTEM
 ```
 
-> output:
+stdout:
 ```txt
 Filesystem     1K-blocks     Used Available Use% Mounted on
 /dev/vda1      650206116 54170548 596019184   9% /usercode/FILESYSTEM
@@ -1355,7 +1361,7 @@ echo "Using -sh option"
 du -sh $FILESYSTEM
 ```
 
-> output:
+stdout:
 ```txt
 Using -h option
 12K	/usercode/FILESYSTEM/.codesignal
@@ -1384,7 +1390,7 @@ echo "Using -sh option"
 du -sh $FILESYSTEM
 ```
 
-> output:
+stdout:
 ```txt
 Using -h option
 11G	/usercode/FILESYSTEM/big_files
@@ -1495,7 +1501,7 @@ command="*/1 * * * * $SCRIPT_PATH" # runs every minute
 crontab -l
 ```
 
-output:
+stdout:
 ```txt
  * Starting periodic command scheduler cron
    ...done.
@@ -1577,7 +1583,7 @@ echo "Backup completed: $backup_dir"
 ls backups/ 
 ```
 
-output:
+stdout:
 ```txt
 Backup completed: /usercode/FILESYSTEM/backups/data_2025-04-21_20-29-00
 data_2025-04-21_20-29-00
@@ -1620,7 +1626,44 @@ ls backups/
 - https://codesignal.com/learn/courses/bash-script-error-handling
 - https://codesignal.com/learn/lesson/3944
 
+- `0`: success
+- `$?`: cmd to check exit status of cmd, ex:
 
+```sh
+#!/bin/bash
+
+echo "Running a successful command (ls)..."  
+ls projects 
+echo "Exit status: $?" 
+
+# Demonstrating a failing command
+echo "Running a failing command..."
+ls nonexistent_directory # Causes error
+echo "Exit status: $?" 
+
+# stdout:
+
+# Running a successful command (ls)...
+# p1.txt
+# Exit status: 0
+# Running a failing command...
+# Exit status: 2
+```
+
+#### The `exit` Command
+
+```sh
+#!/bin/bash
+echo "Exiting with a custom status (42)..."  
+exit 42
+```
+
+- 1: General errors.
+- 2: Misuse of shell builtins (according to the Bash documentation).
+- 126: Command invoked cannot execute.
+- 127: Command not found.
+- 128: Invalid argument to exit.
+- 130: Script terminated by Control-C.
 
 ## Course 5: Text Processing with Bash
 

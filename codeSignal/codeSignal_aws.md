@@ -1091,3 +1091,4 @@ for version in versions.get('Versions', []):
 ### [Lesson 4: Managing Secrets and Configurations with AWS SSM Parameter Store](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/managing-secrets-and-configurations-with-aws-ssm-parameter-store?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
 
 ### [Lesson 5: Managing Encryption Keys with AWS KMS and Boto3](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/managing-encryption-keys-with-aws-kms-and-boto3?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
+
