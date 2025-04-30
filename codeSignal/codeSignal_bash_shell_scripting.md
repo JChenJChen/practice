@@ -1648,6 +1648,9 @@ ls backups/
 
 ## Course 4: Bash Script Error Handling
 - https://codesignal.com/learn/courses/bash-script-error-handling
+
+### [Lesson 1: Understanding Exit Statuses](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/understanding-exit-statuses)
+
 - https://codesignal.com/learn/lesson/3944
 
 - `0`: success
@@ -1811,10 +1814,78 @@ Exit Status of set_e.sh: 2
 ls: cannot access 'nonexistent_directory': No such file or directory
 ```
 
+#### L1P5 Solution Scripts
 
+> https://codesignal.com/learn/course/561/unit/1/practice/5
 
+- solution.sh
+```sh
+#!/bin/bash
+
+# TODO: Make scripts executable
+chmod +x division.sh
+chmod +x find_passwords.sh
+# TODO: Run division.sh to get exit status 1 and display the exit status
+./division.sh 1
+echo "exit status of division.sh: $?"
+# TODO: Run division.sh to get exit status 2 and display the exit status
+./division.sh 1 0
+echo "exit status of division.sh: $?"
+# TODO: Run division.sh to get exit status 0 and display the exit status
+./division.sh 2 4
+echo "exit status of division.sh: $?"
+# TODO: Run find_passwords.sh and display the exit status
+./find_passwords.sh
+echo "exit status of find_passwords.sh: $?"
+```
+
+- division.sh
+```sh
+#!/bin/bash
+
+numerator=$1
+denominator=$2
+num_args=$#
+
+# TODO: Check if the number of arguments is not equal to 2. If so, print a descriptive message and exit with status 1
+if [ $num_args -ne 2 ]; then
+    echo "ERROR: number of args != 2"
+    exit 1
+# TODO: Check if the denominator is 0. If so, print a descriptive message and exit with status 2
+elif [ $denominator -eq 0 ]; then
+    echo "ERROR: denominator is 0"
+    exit 2
+# TODO: If there are 2 arguments, and the denominator is not 0, print the result and exit with status 0
+elif [ $num_args -eq 2 ] && [ $denominator -ne 0 ]; then
+    result=$(($numerator/$denominator))
+    echo "Result: $result"
+    exit 0
+fi
+```
+
+- find_passwords.sh
+```sh
+#!/bin/bash
+
+# TODO: Ensure the script exits if an error is encountered
+set -e
+# TODO: Run a successful command to change the current working directory to passwords
+cd passwords
+echo "Attempting to display the contents of admin_password.txt..."
+# TODO: Run a failing command
+cat admin_password.txt
+echo "Hacker detected!"
+```
+### [Lesson 2: Standard Error and Logging in Shell Scripts](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/standard-error-and-logging-in-shell-scripts)
 
 - https://codesignal.com/learn/lesson/3945
+
+### [Lesson 3: File and Directory Error Handling](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/file-and-directory-error-handling)
+- https://codesignal.com/learn/lesson/3946
+
+### [Lesson 4: Trap Command and Cleaning Up](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/trap-command-and-cleaning-up)
+- https://codesignal.com/learn/lesson/3947
+
 
 ## Course 5: Text Processing with Bash
 
