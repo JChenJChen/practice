@@ -1877,7 +1877,6 @@ cat admin_password.txt
 echo "Hacker detected!"
 ```
 ### [Lesson 2: Standard Error and Logging in Shell Scripts](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/standard-error-and-logging-in-shell-scripts)
-
 - https://codesignal.com/learn/lesson/3945
 
 ### [Lesson 3: File and Directory Error Handling](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/file-and-directory-error-handling)
@@ -1887,9 +1886,7 @@ echo "Hacker detected!"
 - https://codesignal.com/learn/lesson/3947
 
 
-## Course 5: Text Processing with Bash
-
-- https://codesignal.com/learn/courses/text-processing-with-bash
+## [Course 5: Text Processing with Bash](https://codesignal.com/learn/courses/text-processing-with-bash)
 
 
 #### LATER COURSES
