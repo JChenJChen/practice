@@ -898,7 +898,9 @@ def login():
 
 ### Lesson 3: Securing an Endpoint with JWT
 
-- https://codesignal.com/learn/lesson/3018
+- ~~https://codesignal.com/learn/lesson/3018~~
+- https://codesignal.com/learn/courses/securing-flask-apps-with-jwt-authentication/lessons/securing-an-endpoint-with-jwt
+- https://codesignal.com/learn/course/356/unit/3
 
 - Configuring the Protected Endpoint: `@jwt_required` decorator from the `Flask-JWT-Extended` library
 ```py

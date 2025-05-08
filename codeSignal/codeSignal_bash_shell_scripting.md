@@ -277,7 +277,7 @@ echo "Is the user an admin? $?"
 ### Lesson 4: Control Structures and Logical Operators in Shell Scripting
 
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/control-structures-and-logical-operators-in-shell-scripting
-- https://codesignal.com/learn/lesson/3932
+- ~~https://codesignal.com/learn/lesson/3932~~
 
 
 #### Control structures (if, elif, else)
@@ -589,7 +589,7 @@ done
 ### Lesson 6: Functions in Shell Scripts
 
 - https://codesignal.com/learn/courses/introduction-to-shell-scripting-basics/lessons/functions-in-shell-scripts
-- https://codesignal.com/learn/lesson/3934
+- ~~https://codesignal.com/learn/lesson/3934~~
 
 #### Defining and Calling Functions
 
@@ -1877,7 +1877,217 @@ cat admin_password.txt
 echo "Hacker detected!"
 ```
 ### [Lesson 2: Standard Error and Logging in Shell Scripts](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/standard-error-and-logging-in-shell-scripts)
-- https://codesignal.com/learn/lesson/3945
+- ~~https://codesignal.com/learn/lesson/3945~~
+
+#### Understanding Standard Error
+
+1. Standard Input (stdin): default input source for a program, typically represented by file descriptor 0.
+2. Standard Output (stdout): default destination for program output, typically represented by file descriptor 1.
+3. Standard Error (stderr): default destination for error messages and diagnostics, typically represented by file descriptor 2.
+
+#### Custom Error Message to Console
+
+- use `>&2` operator to redirect the echo output to stderr instead of stdout:
+```sh
+#!/bin/bash
+echo "Printing error to stderr" >&2
+```
+
+#### Redirecting Standard Error to a Log File
+
+- `2>` operator: redirect stderr output to file
+  - `2>`: operator overwrites the contents of the file
+  - `2>>`: appends to the file
+
+```sh
+#!/bin/bash
+
+# Define a log file to capture error messages
+log_file="error_log.txt"
+
+ls /nonexistent_directory 2>> $log_file
+
+cat $log_file
+
+# output'd error to log file:
+# ls: cannot access '/nonexistent_directory': No such file or directory
+```
+
+#### Discarding Errors Messages
+
+- redirect `stderr` to `/dev/null` -- special file that discards everything written to it -- to suppress error message entirely (prevents cluttering of terminal or log files)
+```sh
+#!/bin/bash
+
+# Attempt to list a non-existent directory and suppress error messages
+ls /nonexistent_directory 2>/dev/null
+```
+
+#### Conditional Handling of Errors and Logging
+
+- `tee` command: reads from stdin and writes to both stdout and files simultaneously -- allows seeing output in terminal while also saving to file.
+```sh
+command | tee -a output_file
+```
+
+- example script: attempts to copy a non-existent file and logs an error:
+```sh
+#!/bin/bash
+
+# Define a log file to capture error messages
+log_file="error_log.txt"
+
+# Attempt to copy a non-existent file and log errors
+if ! cp nonexistent_file.txt file.txt 2>> $log_file; then
+  echo "Error: Failed to copy file" | tee -a $log_file >&2
+fi
+
+# output to stderr:
+# Error: Failed to copy file
+
+# contents of error_log.txt:
+# cp: cannot stat 'nonexistent_file.txt': No such file or directory
+# Error: Failed to copy file
+```
+> `!`: flips exit status of `cp` (non-zero/false flipped to 0/true)
+> `2>> $log_file`: redirects stderr to error_log.txt
+> `| tee -a $log_file`: pipes echo command output to tee, which appends (-a option) to error_log.txt
+> `&2`: prints message to stderr instead of stdout.
+
+#### U2P2 Solution
+- solution.sh:
+```sh
+#!/bin/bash
+log_file="error_log.txt" # Define the log file name
+
+username="Cosmo"
+if [ $username != "admin" ]; then
+  # TODO: Redirect this error message to the log file
+  echo "Custom Error: $username is not admin" 2> $log_file
+fi
+
+echo "Attempting to list a missing folder..."
+# TODO: Suppress the error message when listing the missing folder
+ls missing_folder 2> /dev/null
+
+echo "Attempting to display contents of a missing file..."
+# TODO: Allow the error message to be displayed in stderr
+cat missing_file >&2
+
+echo "Contents of error_log.txt:"
+cat error_log.txt
+```
+
+#### U2P4 Solution scripts
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Creating empty log files
+> error_big.txt
+> error_small.txt
+> logs.txt
+
+# TODO: Make `check_size.sh` executable
+chmod +x check_size.sh
+
+# Array of filenames
+file_names=("small_file" "good_file" "big_file")
+
+# Array of corresponding file sizes
+file_sizes=(90 200 1001)
+
+
+for (( i=0; i<${#file_sizes[@]}; i++ )); do
+  name=${file_names[$i]}
+  size=${file_sizes[$i]}
+
+  # TODO: Call check_size.sh script with inputs "name" and "size" and capture the error message
+  error_message=$(./check_size.sh $name $size)
+
+  # TODO: Capture the exit status in a variable called exit_status
+  exit_status="$?"
+  # Redirect the error message based on the exit status
+  if [ $exit_status -eq 1 ]; then
+    # TODO: Log the error to error_small.txt
+    echo $error_message 2>> error_small.txt
+    # echo $error_message | tee -a error_small.txt
+    # echo $error_message | tee -a error_small.txt >&2
+  elif [ $exit_status -eq 2 ]; then
+    # TODO: Log the error in error_big.txt
+    echo $error_message 2>> $error_big.txt
+    # echo $error_message | tee -a error_big.txt >&2
+  elif [ $exit_status -eq 0 ]; then
+    # TODO: Log the success message to logs.txt
+    # echo $error_message 2> logs.txt
+    echo $error_message | tee -a logs.txt
+  else
+    echo "Command executed with exit status $exit_status which is not handled."
+  fi
+done
+```
+
+- check_size.sh:
+```sh
+#!/bin/bash
+
+# Get the command arguments
+file_name=$1
+file_size=$2
+
+# Define the min and max size limits
+min_size=100
+max_size=1000
+
+# Check if the file size is smaller than the minimum size
+if [ $file_size -lt $min_size ]; then
+  # TODO: Print an error message indicating the file is too small to stderr
+  echo "$file_name is too small" >&2
+  # echo "file too small" 
+  # TODO: Call exit with status 1
+  exit 1
+
+# Check if the file size is larger than the maximum size
+elif [ $file_size -gt $max_size ]; then
+  # TODO: Print an error message indicating the file is too large to stderr
+  # echo "file is too large"
+  echo "$file_name is too large" >&2
+  # TODO: Call exit with status 2
+  exit 2
+
+# File size is within the accepted range  
+else
+  # TODO: Print a success message indicating the file size is appropriate
+  echo "file size is appropriate"
+  # TODO: Call exit with status 0
+  exit 0
+fi
+```
+HINTS:
+
+Nice progress so far! Here are a few things to consider:
+
+When you use $(...), only the output sent to stdout is captured—not stderr.
+If you want to capture error messages (from stderr), you might need to redirect them to stdout first.
+Also, to log the messages, you can use echo instead of cat.
+What could you change in your command to capture the error output from check_size.sh?
+
+Cosmo
+2:43 PM
+Read message aloud
+Good effort, but your solution isn't quite right yet.
+
+Remember, error messages should be sent to stderr using echo ... >&2, and you should capture those messages properly in your main script. Want to give it another shot or need a hint?
+
+Cosmo
+2:47 PM
+Read message aloud
+Good effort, but there are a few issues to fix:
+
+Error messages should be sent to stderr using >&2.
+The messages should include the filename and match the required format.
+Logging should be done by directly appending to the files, not using tee.
+Want to give it another shot, or would you like a hint?
 
 ### [Lesson 3: File and Directory Error Handling](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/file-and-directory-error-handling)
 - https://codesignal.com/learn/lesson/3946
@@ -1888,7 +2098,3 @@ echo "Hacker detected!"
 
 ## [Course 5: Text Processing with Bash](https://codesignal.com/learn/courses/text-processing-with-bash)
 
-
-#### LATER COURSES
-
-> https://codesignal.com/learn/paths/mastering-web-scraping-with-python-and-beautiful-soup
