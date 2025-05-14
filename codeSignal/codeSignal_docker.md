@@ -54,6 +54,9 @@ docker ps -a # list all running containers, including stopped
 - docker pull
 - docker create: creates container WITHOUT starting
 ```sh
+# Pulling an external Docker image from Docker Hub
+docker pull nginx
+
 docker create --name my-nginx nginx # --name optional, randomly assigns name if omitted
 # container ID to stdout: c49adf897b2a74bcbed915a76eea458b19eae8afa4a71e9b007eb9dbb3723c89
 ```
@@ -66,6 +69,17 @@ docker start my_nginx # or docker stop
 # Option 2: Start the container using the container ID
 docker start c49adf897b2a # or docker stop
 # Output: c49adf897b2a
+
+# Option 1: Stop the container using the name
+docker stop my-nginx
+# Output: my-nginx
+
+# Option 2: Stop the container using the container ID
+docker stop c49adf897b2a
+# Output: c49adf897b2a
+
+docker run --name my-nginx nginx
+# ctrl+C to stop
 ```
 
 ### Unit 3: Building Custom Images with Dockerfile

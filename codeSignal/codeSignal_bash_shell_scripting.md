@@ -1581,12 +1581,10 @@ mkdir -p $backup_dir
 cp -r $source_dir/* $backup_dir/
 echo "Backup completed: $backup_dir"
 ls backups/
-```
 
-output:
-```txt
-Backup completed: /usercode/FILESYSTEM/backups/2025-04-22_17-42-12/data
-2025-04-22_17-42-12
+# output:
+# Backup completed: /usercode/FILESYSTEM/backups/2025-04-22_17-42-12/data
+# 2025-04-22_17-42-12
 ```
 
 ### Lesson 5: Automating Backups
@@ -1651,7 +1649,8 @@ ls backups/
 
 ### [Lesson 1: Understanding Exit Statuses](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/understanding-exit-statuses)
 
-- https://codesignal.com/learn/lesson/3944
+- ~~https://codesignal.com/learn/lesson/3944~~
+- https://codesignal.com/learn/courses/bash-script-error-handling/lessons/understanding-exit-statuses
 
 - `0`: success
 - `$?`: cmd to check exit status of cmd, ex:
@@ -1878,6 +1877,7 @@ echo "Hacker detected!"
 ```
 ### [Lesson 2: Standard Error and Logging in Shell Scripts](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/standard-error-and-logging-in-shell-scripts)
 - ~~https://codesignal.com/learn/lesson/3945~~
+- https://codesignal.com/learn/courses/bash-script-error-handling/lessons/standard-error-and-logging-in-shell-scripts
 
 #### Understanding Standard Error
 
@@ -1912,6 +1912,10 @@ cat $log_file
 # output'd error to log file:
 # ls: cannot access '/nonexistent_directory': No such file or directory
 ```
+
+- `2>&1`: redirects stderr to stdout.
+  - `2>1` may look like a good way to redirect stderr to stdout. However, it will actually be interpreted as "redirect stderr to a file named 1".
+  - `&` indicates that what follows and precedes is a file descriptor, and not a filename. Thus, we use 2>&1. Consider >& to be a redirect merger operator.
 
 #### Discarding Errors Messages
 
@@ -1955,7 +1959,39 @@ fi
 > `&2`: prints message to stderr instead of stdout.
 
 #### U2P2 Solution
-- solution.sh:
+```sh
+- solution.sh:#!/bin/bash
+system_log="system_log.txt"
+error_log="error_log.txt"
+
+# Clear previous log contents
+> $system_log
+> $error_log
+
+# Custom function to run commands
+run_command() {
+  command=$1
+  if ! $command; then
+    # TODO: Log error message to system_log, error_log and stderr using `tee`
+    echo "Error: Command $1 failed" | tee -a  $error_log >&2
+  else
+    # TODO: Log success message to system_log
+    echo "Success: Command $1 executed successfully"
+  fi
+}
+
+# Commands to run
+commands=("touch projects/p1.txt"
+"mkdir projects"
+"touch projects/p2.txt"
+"cp projects/p1.txt projects/p1_copy.txt"
+"cp projects/p2.txt projects/p2_copy.txt")
+
+# Execute each command from the list using a for loop
+for command in "${commands[@]}"; do
+  # TODO: Call run_command with "command" as input
+  run_command $1
+done
 ```sh
 #!/bin/bash
 log_file="error_log.txt" # Define the log file name
@@ -2010,17 +2046,23 @@ for (( i=0; i<${#file_sizes[@]}; i++ )); do
   # Redirect the error message based on the exit status
   if [ $exit_status -eq 1 ]; then
     # TODO: Log the error to error_small.txt
-    echo $error_message 2>> error_small.txt
+    # echo $error_message
+    # echo $error_message 2>> error_small.txt
+    echo $error_message >> error_small.txt
+    # echo $error_message 2>&1
     # echo $error_message | tee -a error_small.txt
     # echo $error_message | tee -a error_small.txt >&2
   elif [ $exit_status -eq 2 ]; then
     # TODO: Log the error in error_big.txt
-    echo $error_message 2>> $error_big.txt
+    # echo $error_message 2>> error_big.txt
+    echo $error_message >> error_big.txt
     # echo $error_message | tee -a error_big.txt >&2
+    # echo $error_message | tee -a error_big.txt
   elif [ $exit_status -eq 0 ]; then
     # TODO: Log the success message to logs.txt
-    # echo $error_message 2> logs.txt
-    echo $error_message | tee -a logs.txt
+    # echo $error_message 2>> logs.txt
+    echo $error_message >> logs.txt
+    # echo $error_message | tee -a logs.txt
   else
     echo "Command executed with exit status $exit_status which is not handled."
   fi
@@ -2042,8 +2084,10 @@ max_size=1000
 # Check if the file size is smaller than the minimum size
 if [ $file_size -lt $min_size ]; then
   # TODO: Print an error message indicating the file is too small to stderr
-  echo "$file_name is too small" >&2
-  # echo "file too small" 
+  # echo "$file_name is too small" >&2 | tee -a 
+  # echo "$file_name is too small" >&2 
+  echo "$file_name is too small" 2>&1
+  # echo "$file_name is too small"
   # TODO: Call exit with status 1
   exit 1
 
@@ -2051,50 +2095,97 @@ if [ $file_size -lt $min_size ]; then
 elif [ $file_size -gt $max_size ]; then
   # TODO: Print an error message indicating the file is too large to stderr
   # echo "file is too large"
-  echo "$file_name is too large" >&2
+  # echo "$file_name is too large" >&2
+  echo "$file_name is too large" 2>&1
+  # echo "$file_name is too large"
   # TODO: Call exit with status 2
   exit 2
 
 # File size is within the accepted range  
 else
   # TODO: Print a success message indicating the file size is appropriate
-  echo "file size is appropriate"
+  echo "$file_name file size is appropriate"
   # TODO: Call exit with status 0
   exit 0
 fi
 ```
-HINTS:
 
-Nice progress so far! Here are a few things to consider:
+- NOTE: no output to stderr or stdout
+- `cat error_big.txt`: "big_file is too large"
+- `cat error_small.txt`: "big_file is too small"
+- `cat logs.txt`: "good_file file size is appropriate"
 
-When you use $(...), only the output sent to stdout is captured—not stderr.
-If you want to capture error messages (from stderr), you might need to redirect them to stdout first.
-Also, to log the messages, you can use echo instead of cat.
-What could you change in your command to capture the error output from check_size.sh?
 
-Cosmo
-2:43 PM
-Read message aloud
-Good effort, but your solution isn't quite right yet.
+#### U2P5 Solution Scripts
+- solution.sh (WIP):
+```sh
+#!/bin/bash
+system_log="system_log.txt"
+error_log="error_log.txt"
 
-Remember, error messages should be sent to stderr using echo ... >&2, and you should capture those messages properly in your main script. Want to give it another shot or need a hint?
+# Clear previous log contents
+> $system_log
+> $error_log
 
-Cosmo
-2:47 PM
-Read message aloud
-Good effort, but there are a few issues to fix:
+# Custom function to run commands
+run_command() {
+  command=$1
+  if ! $command; then
+    # TODO: Log error message to system_log, error_log and stderr using `tee`
+    echo "Error: Command $1 failed" | tee -a $system_log $error_log >&2
+  else
+    # TODO: Log success message to system_log
+    echo "Success: Command $1 executed successfully" | tee -a  $system_log
+  fi
+}
 
-Error messages should be sent to stderr using >&2.
-The messages should include the filename and match the required format.
-Logging should be done by directly appending to the files, not using tee.
-Want to give it another shot, or would you like a hint?
+# Commands to run
+commands=("touch projects/p1.txt"
+"mkdir projects"
+"touch projects/p2.txt"
+"cp projects/p1.txt projects/p1_copy.txt"
+"cp projects/p2.txt projects/p2_copy.txt")
+
+# Execute each command from the list using a for loop
+for command in "${commands[@]}"; do
+  # TODO: Call run_command with "command" as input
+  # echo "$command"
+  run_command "$command"
+done
+```
+
+expected_output.txt:
+```txt
+`stderr` expected output:
+touch: cannot touch 'projects/p1.txt': No such file or directory
+Error: Command 'touch projects/p1.txt' failed
+cp: cannot stat 'projects/p1.txt': No such file or directory
+Error: Command 'cp projects/p1.txt projects/p1_copy.txt' failed
+
+`system_log.txt` expected output:
+Error: Command 'touch projects/p1.txt' failed
+Success: Command 'mkdir projects' executed successfully
+Success: Command 'touch projects/p2.txt' executed successfully
+Error: Command 'cp projects/p1.txt projects/p1_copy.txt' failed
+Success: Command 'cp projects/p2.txt projects/p2_copy.txt' executed successfully
+
+`error_log.txt` expected output:
+Error: Command 'touch projects/p1.txt' failed
+Error: Command 'cp projects/p1.txt projects/p1_copy.txt' failed
+```
 
 ### [Lesson 3: File and Directory Error Handling](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/file-and-directory-error-handling)
-- https://codesignal.com/learn/lesson/3946
+- ~~https://codesignal.com/learn/lesson/3946~~
+- 
 
 ### [Lesson 4: Trap Command and Cleaning Up](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/trap-command-and-cleaning-up)
-- https://codesignal.com/learn/lesson/3947
+- ~~https://codesignal.com/learn/lesson/3947~~
+- 
 
 
 ## [Course 5: Text Processing with Bash](https://codesignal.com/learn/courses/text-processing-with-bash)
 
+
+
+
+dread said wed ned ted
