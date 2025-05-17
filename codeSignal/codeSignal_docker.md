@@ -84,6 +84,40 @@ docker run --name my-nginx nginx
 
 ### Unit 3: Building Custom Images with Dockerfile
 
+- convention is to place Dockerfile at project root dir.
+- more effective caching: less frequently changed layers at top, more frequent at bottom.
+
+#### Basic Syntax of a Dockerfile
+
+- `FROM`: base image. Always in beginning.
+- `RUN`: executes instructions (only once) during image build to set up app env. Ex: install software, apply system updates.
+  - merge similar steps into a single RUN cmd to minimize layers & size.
+- `COPY`: moves files from host machine to image's filesystem.
+- `CMD`: default cmd to run when container starts/launches.
+
+Example Dockerfile contents:
+```Dockerfile
+# Use the official nginx image as the base image
+FROM nginx:1.27.2
+
+# Run an update using the package manager
+RUN apt-get update
+
+# Copy custom HTML file to the default nginx directory
+COPY index.html /usr/share/nginx/html/
+
+# Set the default command to run when starting the container
+CMD ["nginx", "-g", "daemon off;"] 
+# -g: stay active in foreground instead of running in background, to keep container running & responsive
+# semi-colon at end of CMD not always necessary
+```
+
+#### Building Your Custom Image
+
+```sh
+# Build custom image from Dockerfile
+docker build -t custom-nginx .
+```
 
 ### Unit 4: Executing Containers with Custom Port Mapping
 

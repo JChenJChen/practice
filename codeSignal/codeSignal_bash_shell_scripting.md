@@ -2178,6 +2178,185 @@ Error: Command 'cp projects/p1.txt projects/p1_copy.txt' failed
 - ~~https://codesignal.com/learn/lesson/3946~~
 - 
 
+#### Checking File Existence
+
+- check file exists beforehand to prevent errors 
+- `[ -f $file ]: check if the specified path is a regular file
+```sh
+#!/bin/bash
+
+# Creating a file
+touch example.txt
+
+# Check if a file exists
+file="example.txt"
+if [ -f $file ]; then # returns true
+  echo "File '$file' exists."
+else # returns false
+  echo "File '$file' does not exist."
+fi
+```
+
+#### Checking Directory Existence
+
+- `[ -d $directory ]`
+```sh
+#!/bin/bash
+
+# Creating a directory
+mkdir -p example_dir
+
+# Check if a directory exists
+directory="example_dir"
+if [ -d $directory ]; then # returns true
+  echo "Directory '$directory' exists." 
+else # returns false
+  echo "Directory '$directory' does not exist."
+fi
+```
+
+#### Checking Script Execution Permissions
+
+- `[ -x $script ]`: returns true if path exists AND has execution perms
+```sh
+#!/bin/bash
+
+# Creating an executable script
+touch example.sh
+chmod +x example.sh
+
+# Check if a script has execution permissions
+script="example.sh"
+if [ -x $script ]; then
+  echo "Script '$script' has execution permissions."
+else
+  echo "Script '$script' does not have execution permissions."
+fi
+```
+
+#### P1 demo script
+```sh
+#!/bin/bash
+
+# Creating files and directories for demonstration
+touch report.txt
+mkdir -p logs
+
+touch update_script.sh
+chmod +x update_script.sh
+
+# Check if a file exists
+file="report.txt"
+if [ -f $file ]; then
+  echo "File '$file' exists."
+else
+  echo "File '$file' does not exist."
+fi
+
+# Check if a directory exists
+directory="logs"
+if [ -d $directory ]; then
+  echo "Directory '$directory' exists."
+else
+  echo "Directory '$directory' does not exist."
+fi
+
+# Check if a script has execution permissions
+script="update_script.sh"
+if [ -x $script ]; then
+  echo "Script '$script' has execution permissions."
+else
+  echo "Script '$script' does not have execution permissions."
+fi
+```
+
+#### P3 Solution
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Path variables
+directories=("backup_scripts" "monitoring_tools")
+files=("backup_manager.sh" "system_monitor.sh")
+
+# Function to ensure directory and file creation and set execute permission
+check_and_create() {
+  directory=$1
+  file=$2
+
+  # Construct the full file path
+  file_path="$directory/$file"
+
+  # TODO: Check if the directory exists, if not create it
+  if [ ! -d $directory ]; then
+    mkdir $directory
+    echo "Created directory $directory."
+  fi
+
+  # TODO: Check if the file exists inside the directory, if not create it
+  if [ ! -f $file_path ]; then
+    touch $file_path
+    echo "echo 'Hello from $file_path'" > "$file_path"
+    echo "Created file $file inside $directory."
+  fi
+
+  # TODO: Check if the file has execution permissions, if not grant them
+  if [ ! -x $file_path ]; then
+    chmod +x $file_path
+    echo "Granted execute permission to $file_path."
+  fi
+  
+  echo ""
+  echo "Calling $file_path"
+  # TODO: Execute the file
+  $file_path
+  echo ""
+}
+
+length=${#directories[@]}
+
+for (( i=0; i<$length; i++ )); do
+  check_and_create "${directories[$i]}" "${files[$i]}"
+done
+```
+
+#### P4 Solution [WIP]
+-solution.sh:
+```sh
+#!/bin/bash
+
+key="encryption_key.txt"
+passwords="passwords.txt"
+secrets="secret_data"
+classified="classified_info"
+
+
+# TODO: Check if the file '$key' exists. If is does, remove the file
+if [ -f $key ]; then
+  echo "File '$key' exists. Removing file..."
+  rm $key
+else
+  echo "File '$key' does not exist."
+fi
+
+
+# TODO: Check if the '$secrets' directory exists AND if it contains passwords.txt. If so, then remove the entire '$secrets' directory
+if [ -d $secrets ] && [ -f $secrets/$passwords ]; then
+  echo "Directory '$secrets' contains '$passwords'. Removing directory..."
+  rm -r $secrets
+else
+  echo "Directory '$secrets' does not contain '$passwords' or does not exist."
+fi
+
+# TODO: Check if the '$classified' directory exists and if it contains the file '$passwords'. If so, only remove the $passwords file inside $classified
+if [ -d $classified ] && [ -f $classified/$passwords ]; then
+  echo "File '$passwords' exists in '$classified'. Removing file..."
+  rm $classified/$passwords
+else
+  echo "File '$passwords' does not exist in '$classified'."
+fi
+```
+
 ### [Lesson 4: Trap Command and Cleaning Up](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/trap-command-and-cleaning-up)
 - ~~https://codesignal.com/learn/lesson/3947~~
 - 
