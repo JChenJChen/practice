@@ -2320,7 +2320,7 @@ for (( i=0; i<$length; i++ )); do
 done
 ```
 
-#### P4 Solution [WIP]
+#### P4 Solution
 -solution.sh:
 ```sh
 #!/bin/bash
@@ -2355,6 +2355,95 @@ if [ -d $classified ] && [ -f $classified/$passwords ]; then
 else
   echo "File '$passwords' does not exist in '$classified'."
 fi
+```
+
+#### P5 Solution
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Clear errors file
+> errors.txt
+
+echo "Source 1" > source1.txt
+echo "Source 2" > source2.txt
+
+script="./safe_copy.sh"
+
+# TODO: Check if safe_copy.sh is executable. Update permissions if it is not and print a message
+if [ ! -x $script ]; then
+    chmod +x $script
+    echo "$script updated to executable"
+fi
+
+# TODO: Invoke safe_copy.sh to copy source1.txt to dest1.txt, append any errors to errors.txt
+$script source1.txt dest1.txt 2>> errors.txt
+# TODO: Invoke safe_copy.sh to copy source2.txt to dest1.txt, append any errors to errors.txt
+$script source2.txt dest1.txt 2>> errors.txt
+
+# TODO: Invoke safe_copy.sh to copy source2.txt to dest2.txt, append any errors to errors.txt
+$script source2.txt dest2.txt 2>> errors.txt
+
+# TODO: Invoke safe_copy.sh to copy source3.txt to dest3.txt, append any errors to errors.txt
+$script source3.txt dest3.txt 2>> errors.txt
+
+echo ""
+echo "Printing errors.txt..."
+# TODO: Print the contents of errors.txt
+cat errors.txt
+```
+
+- safe_copy.sh:
+```sh
+#!/bin/bash
+
+# Define source and destination files from the script arguments
+src_file=$1
+dest_file=$2
+
+# TODO: Check if the source file exists
+if [ -f $src_file ]; then
+# - If it exists, print a message to stdout
+    echo "$src_file src_file exists"
+# - If not, print an error message to stderr and exit with status 1.
+else
+    echo "$src_file src_file does not exist" >&2
+    exit 1
+fi
+
+# TODO: Check if the destination file already exists
+if [ -f $dest_file ]; then
+# - If it exists, print an error message to stderr and exit with status 2.
+    echo "$dest_file dest_file already exists" >&2
+    exit 2
+# - If not, create the destination file and print a message to stdout.
+else
+    touch $dest_file
+    echo "$dest_file dest_file created"
+fi
+
+# TODO: Perform the copy operation from source file to destination file
+cp $src_file $dest_file
+# TODO: Print a message indicating that the copy operation was successful
+echo "$src_file to $dest_file copy successful"
+```
+
+- stdout:
+```txt
+Removed dest1.txt
+Removed dest2.txt
+dest3.txt does not exist, skipping.
+source1.txt src_file exists
+dest1.txt dest_file created
+source1.txt to dest1.txt copy successful
+source2.txt src_file exists
+source2.txt src_file exists
+dest2.txt dest_file created
+source2.txt to dest2.txt copy successful
+
+Printing errors.txt...
+dest1.txt dest_file already exists
+source3.txt src_file does not exist
 ```
 
 ### [Lesson 4: Trap Command and Cleaning Up](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/trap-command-and-cleaning-up)

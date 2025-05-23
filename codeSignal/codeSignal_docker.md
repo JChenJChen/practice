@@ -121,6 +121,22 @@ docker build -t custom-nginx .
 
 ### Unit 4: Executing Containers with Custom Port Mapping
 
+```Dockerfile
+# Expose port 80
+EXPOSE 80
+```
+
+```sh
+docker create --name my-nginx -p 8080:80 custom-nginx
+docker start my-nginx
+
+# Run the first container, mapping its port 80 to host port 8080
+docker run -p 8080:80 custom-nginx
+# NOTE: host port: container port
+
+# Run the second container, mapping its port 80 to host port 8081
+docker run -p 8081:80 custom-nginx
+```
 
 ### Unit 5: Mastering Attached and Detached Modes
 
