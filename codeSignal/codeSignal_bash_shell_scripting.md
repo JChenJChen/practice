@@ -2448,8 +2448,91 @@ source3.txt src_file does not exist
 
 ### [Lesson 4: Trap Command and Cleaning Up](https://codesignal.com/learn/courses/bash-script-error-handling/lessons/trap-command-and-cleaning-up)
 - ~~https://codesignal.com/learn/lesson/3947~~
-- 
+- https://codesignal.com/learn/courses/bash-script-error-handling/lessons/trap-command-and-cleaning-up
 
+- trap 'commands' signal
+```sh
+#!/bin/bash
+
+# Define cleanup function for EXIT
+cleanup_exit() {
+   echo "EXIT signal received. Cleaning up..." 
+   rm -f temp.txt
+}
+
+# Define cleanup function for INT
+cleanup_int() {
+   echo "INT signal received from Ctrl+C. Not removing temp.txt"
+}
+
+# Set traps
+trap cleanup_exit EXIT
+trap cleanup_int INT
+
+# Simulate work
+touch temp.txt
+echo "Working with temp.txt. Press Ctrl+C to interrupt." 
+
+# Exiting script
+exit 0
+```
+
+- P1 demo code:
+```sh
+#!/bin/bash
+
+# Define a cleanup function
+cleanup() {
+  echo "Cleaning up..."
+  rm temp.txt
+  [ -f temp.txt ]
+  echo "Does temp.txt exist? $?"
+}
+
+# Set up a trap to call cleanup on script exit
+trap cleanup EXIT
+
+# Creating a temporary file
+echo "Creating a temporary file..."
+touch temp.txt
+
+# Simulate some work
+echo "Adding a temporary note." > temp.txt
+echo "Done working with temp.txt. It can be cleaned up."
+
+# Exit automatically calls the cleanup function
+exit 0
+```
+
+#### U4P3
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Define a cleanup function that takes a file name as argument
+
+# Add temporary files
+echo "creating temp files"
+touch temp1.txt
+touch temp2.txt
+
+cleanup() {
+  file_name=$1
+  if [ -f $file_name ]; then
+    echo "Removing $file_name"
+    rm -f $file_name
+  fi
+}
+
+# Set trap to call "cleanup" with arguments "temp1.txt" when script exits
+trap 'cleanup temp1.txt' EXIT 
+
+
+
+
+# Trigger trap
+exit 0
+```
 
 ## [Course 5: Text Processing with Bash](https://codesignal.com/learn/courses/text-processing-with-bash)
 
