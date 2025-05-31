@@ -2534,6 +2534,194 @@ trap 'cleanup temp1.txt' EXIT
 exit 0
 ```
 
+#### U4P4
+- save.sh:
+```sh
+#!/bin/bash
+
+# Define a cleanup function for normal exit (EXIT signal)
+cleanup_exit() {
+  # TODO: check if the script exited with a status of 0
+  if [ $? -eq 0 ]; then
+    echo "Script terminated normally. Adding contents to report.txt."
+    
+    # TODO: Append the save timestamp to report.txt
+    echo "Report saved at $(date +"%Y/%m/%d/%H:%M:%S")" >> report.txt
+    
+    # TODO: Append the contents of temp.txt to report.txt
+    cat temp.txt >> report.txt
+    
+    # Clear the contents of temp.txt
+    > temp.txt
+  fi
+}
+
+# Define a cleanup function for interrupt signal (INT signal)
+cleanup_interrupt() {
+  echo "Script interrupted. Adding error to logs.txt"
+  
+  # TODO: Append the interrupt timestamp to logs.txt
+  echo "Interrupt received at $(date +"%Y/%m/%d/%H:%M:%S")" >> logs.txt
+  
+  # TODO: Append the contents of temp.txt to logs.txt
+  cat temp.txt >> logs.txt
+  # Clear the contents of temp.txt
+  > temp.txt
+}
+
+# TODO: Set a trap to call cleanup_exit when EXIT signal is received
+trap cleanup_exit EXIT
+
+# TODO: Set a trap to call cleanup_interrupt when INT signal is received
+trap cleanup_interrupt INT
+
+signal=$1
+# TODO: Check if the signal is "EXIT"
+if [ $signal == "EXIT" ]; then
+  # TODO: exit the script normally with status code 0
+  exit 0
+# TODO: Check if the input to the script is "INT"
+elif [ $signal == "INT" ]; then
+  kill -INT $$
+  # Note: exit 130 is the standard exit code for an interrupt signal
+  exit 130
+
+fi
+```
+
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Create empty logs.txt, report.txt, and temp.txt files
+> logs.txt
+> report.txt
+> temp.txt
+
+chmod +x save.sh
+
+echo "Starting Server" > temp.txt
+# TODO: Call save.sh with input "EXIT"
+./save.sh EXIT
+
+echo "Connection Unstable" >> temp.txt
+echo "Lost connection" >> temp.txt
+# TODO: Call save.sh with input "INT"
+./save.sh INT
+
+echo "Connection found" >> temp.txt
+echo "Connection stable" >> temp.txt
+# TODO: Call save.sh with input "EXIT"
+./save.sh EXIT
+
+
+echo
+echo "Printing logs.txt:"
+# TODO: Print the contents of logs.txt
+cat logs.txt
+echo
+
+echo "Printing report.txt:"
+# TODO: Print the contents of report.txt
+cat report.txt
+```
+
+```sh
+#!/bin/bash
+
+# TODO: cleanup_success should:
+# - Append "Operation successful" to logs.txt
+# - Remove temp.txt
+# - Print the contents of logs.txt
+cleanup_success() {
+  echo "Cleaning up after success..."  # Prints "Cleaning up after success..."
+  echo "Operation successful" >> logs.txt
+  rm -f temp.txt
+  cat logs.txt
+}
+
+# TODO: cleanup_failure should:
+# - Append the contents of temp.txt to logs.txt
+# - Remove temp.txt
+# - Print the contents of logs.txt
+cleanup_failure() {
+  echo "Cleaning up after failure..."
+  cat temp.txt >> logs.txt
+  rm -f temp.txt
+  cat logs.txt
+}
+
+# TODO: cleanup_exit should:
+# - Call cleanup_success for 0 exit codes
+# - Call cleanup_failure for non-zero exit codes
+cleanup_exit() {
+    echo "Dispatching exit function"
+    if [ $? -eq 0 ]; then
+      cleanup_success
+    else
+      cleanup_failure
+    fi
+}
+
+# TODO: Define a trap to call cleanup_exit for EXIT signal
+trap cleanup_exit EXIT
+# Make app_update.sh executable
+chmod +x app_update.sh 
+
+# TODO: Call app_update.sh with input "browser". Redirect errors to temp.txt
+./app_update.sh "browser" 2>> temp.txt
+STATUS1=$?
+
+# TODO: Call app_update.sh with no input. Redirect errors to temp.txt
+./app_update.sh 2>> temp.txt
+STATUS2=$?
+
+# TODO: Call app_update.sh with input "music". Redirect errors to temp.txt
+./app_update.sh music 2>> temp.txt
+STATUS3=$?
+
+if [[ $STATUS1 -ne 0 || $STATUS2 -ne 0 || $STATUS3 -ne 0 ]]; then
+    echo "At least one command failed."
+    # TODO: Exit with failing status
+    exit 1
+else
+    echo "All commands succeeded."
+    # TODO: Exit with successful status
+    exit 0
+fi```
+
+```sh
+#!/bin/bash
+
+# APP from the first argument
+APP=$1
+
+# Check if the application name is provided
+if [[ -z $APP ]]; then
+    # TODO: Redirect this echo command to stderr
+    echo "Error: Must provide application name" >&2 # 2>&1
+    
+    # TODO: Exit with failing status
+    exit 1
+fi
+
+# File name from application name
+FILE="$APP.txt"
+
+# Check if the file exists
+if [[ -f "$FILE" ]]; then
+    echo "Updated at $(date)" >> $FILE
+    
+    # TODO: Exit with success status
+    exit 0
+else
+    # TODO: Redirect this echo command to stderr
+    echo "Error: Application $APP does not exist."
+    
+    # TODO: Exit with failing status
+    exit 1
+fi
+```
 ## [Course 5: Text Processing with Bash](https://codesignal.com/learn/courses/text-processing-with-bash)
 
 
