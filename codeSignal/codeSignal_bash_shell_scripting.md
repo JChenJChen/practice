@@ -2688,7 +2688,8 @@ else
     echo "All commands succeeded."
     # TODO: Exit with successful status
     exit 0
-fi```
+fi
+```
 
 ```sh
 #!/bin/bash
@@ -2724,7 +2725,76 @@ fi
 ```
 ## [Course 5: Text Processing with Bash](https://codesignal.com/learn/courses/text-processing-with-bash)
 
+### [Lesson 1: Echo Text Control in Bash](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/echo-text-control-in-bash)
 
+#### Suppressing New Lines
 
+```sh
+#!/bin/bash
+
+# Suppress new line
+echo -n "Hello"  # Prints "Hello" without newline
+echo "World"    # Prints "World" on the same line as "Hello"
+```
+
+#### Escape Characters
+
+```sh
+echo -e "..." # escape sequences are interpreted and displayed as their corresponding special characters.
+```
+
+- `\n` for a new line
+- `\t` for a tab
+- `\\\` for a backslash
+- `\"` for a quote
+
+#### Tab Spaces
+
+```sh
+#!/bin/bash
+echo -e "Column1 \tColumn2 \tColumn3"
+```
+
+#### Displaying Colored Text
+
+```sh
+echo -e "\e[<ANSI_code>m<Your text>\e[0m"
+```
+
+- common ANSI_codes:
+  - 30: Black
+  - 31: Red
+  - 32: Green
+  - 33: Yellow
+  - 34: Blue
+  - 35: Magenta
+  - 36: Cyan
+  - 37: White
+
+#### U1P4
+```sh
+#!/bin/bash
+
+# TODO: Print "Username: " and "admin" on the same line
+echo "Username: admin"
+
+# TODO: Print the log entries on new lines
+echo -e "Log entries: \n1. System rebooted successfully. \n2. Connecting to server"
+
+# TODO: Print service statuses in a table format using \t
+echo -e "SSH \tRunning"
+echo -e "HTTP \tStopped"
+
+# TODO: Print the path with blashslashes
+echo -e "Backup location: C:\\\network\\\backup"
+
+# TODO: Put the message in quotes
+echo -e "Message: \"System maintenance scheduled at 2 AM\""
+
+# TODO: Change the color to red (31)
+echo -e "\e[31mWarning: Disk space low!\e[0m"
+```
+
+### Lesson 2:
 
 dread said wed ned ted
