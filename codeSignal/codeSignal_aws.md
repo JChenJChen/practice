@@ -1051,6 +1051,45 @@ for version in versions.get('Versions', []):
 
 ```
 
+#### U5P4
+
+```py
+import boto3
+import os
+from pprint import pprint
+
+# Create S3 resource
+s3 = boto3.resource('s3')
+s3_client = boto3.client('s3')
+
+# Ensure that /usercode/FILESYSTEM/downloads folder exists
+downloads_folder = "/usercode/FILESYSTEM/downloads"
+os.makedirs(downloads_folder, exist_ok=True)
+
+# Create S3 bucket called `cosmo-course-logos`
+bucket_name = 'cosmo-course-logos'
+s3.create_bucket(Bucket=bucket_name)
+
+# Enable versioning for created bucket
+s3.BucketVersioning(bucket_name).enable()
+
+# Upload "/usercode/FILESYSTEM/assets/data-science-python-course-logo.jpg" to the bucket under object name "versioned-course-logo.jpg"
+s3_client.upload_file(Filename='/usercode/FILESYSTEM/assets/data-science-python-course-logo.jpg', Bucket=bucket_name, Key='versioned-course-logo.jpg')
+
+# Upload "/usercode/FILESYSTEM/assets/machine-learning-course-logo.jpg" to the bucket under object name "versioned-course-logo.jpg"
+s3_client.upload_file(Filename='/usercode/FILESYSTEM/assets/machine-learning-course-logo.jpg', Bucket=bucket_name, Key='versioned-course-logo.jpg')
+
+# TODO: Retrieve all version ids for the 'versioned-course-logo.jpg'. Remember, the first version uploaded will be the last in the list due to reverse order.
+versions = s3_client.list_object_versions(Bucket=bucket_name, Prefix='versioned-course-logo.jpg')
+for version in versions.get('Versions', []):
+    print('Key:', version['Key'], 'VersionId:', version['VersionId'], 'LastModified:', version['LastModified'], 'IsLatest:', version['IsLatest'])
+# print(versions[-1]['VersionId'])
+pprint(versions)
+    
+# TODO: Download the earliest version of 'versioned-course-logo.jpg' to the '/usercode/FILESYSTEM/downloads/' folder
+s3_client.download_file(bucket_name, 'versioned-course-logo.jpg', '/usercode/FILESYSTEM/downloads/versioned-course-logo.jpg', ExtraArgs={'VersionId': 'AZc82fqxrl_G7URJTS4d.WEn5pip5x1U'})
+```
+
 ## [Course 3: Introduction to DynamoDB with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python)
 
 ### [Lesson 1: Setting Up Your DynamoDB Environment with Boto3 in Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/setting-up-your-dynamodb-environment-with-boto3-in-python?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)

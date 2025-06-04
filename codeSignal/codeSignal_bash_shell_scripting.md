@@ -2795,6 +2795,18 @@ echo -e "Message: \"System maintenance scheduled at 2 AM\""
 echo -e "\e[31mWarning: Disk space low!\e[0m"
 ```
 
-### Lesson 2:
+### [Lesson 2: File Name Expansion and Management in Bash](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/file-name-expansion-and-management-in-bash)
+
+#### Wildcards and Basic Expansion
+
+- globbing: File name expansion, i.e. match filenames using patterns with special characters called wildcards:
+  - `*`: matches any number of characters (including none). Useful for files with similar names but different suffixes or prefixes. ex: `*.txt`, `file*`
+  - `?`: matches exactly one character. useful for filtering files with specific character lengths. ex: `draft?.md`, `draft??.md`
+  - `[]`: match a specific set or range of characters. ex: `file[1-3].txt`, `file[A-C].txt`, `file[1-35-6].txt` &arr; "1, 2, 3, 5, 6"
+  - `{}`: generate arbitrary strings, i.e. `OR`. ex: `file{1,2,1A}.txt`
+- Combining Wildcards for Flexible Matching: ex: `{file,draft}[1-3A]??.*`
+- case-sensitivity:
+  - `shopt -s nocaseglob`: case-insensitive match shell option
+  - `shopt -u nocaseglob`: case-sensitive
 
 dread said wed ned ted
