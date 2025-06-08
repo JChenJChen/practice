@@ -1094,6 +1094,53 @@ s3_client.download_file(bucket_name, 'versioned-course-logo.jpg', '/usercode/FIL
 
 ### [Lesson 1: Setting Up Your DynamoDB Environment with Boto3 in Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/setting-up-your-dynamodb-environment-with-boto3-in-python?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
+- DynamoDB key concepts:
+  - tables: each table item has unique PK requirement.
+  - items: each table record, one or more attributes, no strict schema req besides PK.
+  - attributes: key-value pair, data field within an item. Each can have different schemas.
+
+#### Creating an AWS Session using Boto3
+
+```py
+import boto3
+
+# Create an AWS session with explicit credentials and region
+session = boto3.Session(
+    aws_access_key_id='YOUR_ACCESS_KEY_ID',
+    aws_secret_access_key='YOUR_SECRET_ACCESS_KEY',
+    region_name='us-west-2'
+)
+```
+
+#### Setting Up DynamoDB with Boto3
+
+1. client interface: low-level access with methods closely mirroring the AWS API, ideal for detailed management tasks
+2. resource interface: higher-level, object-oriented approach, simplifying interactions by representing AWS services as objects
+
+```py
+import boto3
+
+# Create a default DynamoDB resource and client (with the default session)
+default_dynamodb_resource = boto3.resource('dynamodb')
+default_dynamodb_client = boto3.client('dynamodb')
+```
+- create multiple sessions when managing DynamoDB tables across different regions or using multiple AWS accounts -- allows configuring each session with specific credentials and settings
+
+```py
+# Create a specific AWS session for a different region
+session_us_east_1 = boto3.Session(
+    aws_access_key_id='ANOTHER_ACCESS_KEY_ID',
+    aws_secret_access_key='ANOTHER_SECRET_ACCESS_KEY',
+    region_name='us-east-1'
+)
+
+# Create a DynamoDB resource and client using the specific session
+dynamodb_resource_us_east_1 = session_us_east_1.resource('dynamodb')
+dynamodb_client_us_east_1 = session_us_east_1.client('dynamodb')
+```
+
+
+
 ### [Lesson 2: Creating and Configuring DynamoDB Tables with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-and-configuring-dynamodb-tables-with-aws-sdk-for-python?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
 ### [Lesson 3: Creating Data in DynamoDB: Inserting Items with PutItem and BatchWriteItem Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-data-in-dynamodb-inserting-items-with-putitem-and-batchwriteitem-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
