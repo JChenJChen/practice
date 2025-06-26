@@ -1291,23 +1291,26 @@ FILESYSTEM="/tmp"
 # Clear any previous files
 rm -rf /tmp/big_files
 
-# Display the disk usage of the filesystem containing the /tmp directory.
+# Display the disk usage of /tmp dir -- in bytes
 echo "Filesystem usage:"
 df $FILESYSTEM
 echo 
 
+# Display the disk usage of /tmp dir -- human-readable
 echo "Filesystem usage with -h"
 df -h $FILESYSTEM
 echo
 
-# Display the disk usage of all files and directories under /tmp
+# Display the disk usage of all files and dirs under /tmp -- in bytes
 echo "Directory usage with -h"
 du -h $FILESYSTEM
 echo
 
+# Display the disk usage of all files and dirs under /tmp -- human-readable
 echo "Directory usage with -sh"
 du -sh $FILESYSTEM
 echo
+
 
 # Create a new directory with a big file, and print out disk usage statistics
 echo "Creating a 10 MB file"
@@ -1317,6 +1320,10 @@ fallocate -l 10M $FILESYSTEM/big_files/10MB_file
 echo
 echo "Directory usage after creating file"
 du -h $FILESYSTEM
+
+# display total amount of free and used physical and swap memory in your system, as well as the buffers and caches used by the kernel
+free
+
 ```
 #### Disk Usage of Filesystems with df
 
@@ -1333,15 +1340,13 @@ FILESYSTEM="/usercode/FILESYSTEM"
 # Display the disk usage of the filesystem containing the /usercode/FILESYSTEM directory
 df $FILESYSTEM
 df -h $FILESYSTEM
-```
 
-stdout:
-```txt
-Filesystem     1K-blocks     Used Available Use% Mounted on
-/dev/vda1      650206116 54170548 596019184   9% /usercode/FILESYSTEM
+# stdout:
+# Filesystem     1K-blocks     Used Available Use% Mounted on
+# /dev/vda1      650206116 54170548 596019184   9% /usercode/FILESYSTEM
 
-Filesystem      Size  Used Avail Use% Mounted on
-/dev/vda1       621G   52G  569G   9% /usercode/FILESYSTEM
+# Filesystem      Size  Used Avail Use% Mounted on
+# /dev/vda1       621G   52G  569G   9% /usercode/FILESYSTEM
 ```
 
 #### Disk Usage of Files and Directories with du
@@ -2808,5 +2813,46 @@ echo -e "\e[31mWarning: Disk space low!\e[0m"
 - case-sensitivity:
   - `shopt -s nocaseglob`: case-insensitive match shell option
   - `shopt -u nocaseglob`: case-sensitive
+
+#### U2P3
+```sh
+#!/bin/bash
+
+# Create example files
+touch report01.txt report12.doc report3.pdf report1A.md
+touch fileA_1_a.txt fileBx2xb.txt filea_1_A.txt
+touch image1.JPG IMAGE2.PNG photo11.jpg PHOTOa.jpg PhOtO1.PnG
+
+# TODO: Find filenames that start with "report", followed by any two digits, and then any file extension
+ls report[0-9][0-9].*
+echo
+
+# TODO: Find filenames starting with "file", followed by an uppercase letter, any character, a digit, any character, a lowercase letter, and ".txt"
+ls file[A-Z]?[0-9]?[a-z].txt
+
+echo
+
+# TODO: Find filenames that start with either "image" or "photo", followed by one character, and then either ".jpg" or ".png". The query should be case-insensitive
+shopt -s nocaseglob
+ls {image,photo}?.{jpg,png}
+
+shopt -u nocaseglob
+```
+
+### [Lesson 3: Pattern Matching and Search with Grep](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/pattern-matching-and-search-with-grep)
+
+- Global Regular Expression Print
+- returns **lines** that match pattern
+```sh
+grep 'pattern' filename
+grep -w 'pattern' filename # `-w`: match whole word
+grep -i 'pattern' filename # `-i`: case insensitive
+grep '^pattern' filename # `^`: match lines starting with pattern
+-n # show line number
+-v # invert match, lines that don't match pattern
+-c # count matches
+grep -e 'Hello' -e 'grep' file.txt # `-e`: OR logic
+grep -i 'grep' file.txt | grep -i 'hello' # `|`: AND logic
+```
 
 dread said wed ned ted

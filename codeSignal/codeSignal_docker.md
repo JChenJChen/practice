@@ -140,11 +140,80 @@ docker run -p 8081:80 custom-nginx
 
 ### Unit 5: Mastering Attached and Detached Modes
 
+- attached mode: stdin, stdout, stderr in terminal
 
+- detached mode, container:
+  - works silently in background
+  - no container output in terminal, but
+  - will receive confirmation message in stdout, i.e.: container ID: `884fda246c7aec578f8476c6d96a602f518eda6869047c08ecf2560bfda92d78`
+
+
+```sh
+
+# Run a container in attached mode (default)
+docker run nginx
+
+# Run a container in detached mode
+docker run -d nginx
+
+# Start an existing container in detached mode (default)
+docker start <container-id-or-name>
+
+# Start an existing container in attached mode
+docker start -a <container-id-or-name>
+
+# View logs of a container identified by container ID or name
+docker logs <container-id-or-name>
+# ex: docker logs my-nginx
+
+# Continuously monitor logs in real-time
+docker logs -f <container-id-or-name>
+
+# Start an existing container in attached mode
+docker start -a <container-id-or-name>
+
+# Run a container in detached mode with port mapping and a specific name
+docker run -d -p 8080:80 --name my-nginx nginx
+
+```
 
 ## Course 2. Diving Deeper into Images & Containers
 
+### [Unit 1. Explore Interactive Container Mode with Docker](https://codesignal.com/learn/courses/diving-deeper-into-images-containers/lessons/explore-interactive-container-mode-with-docker)
 
+#### Starting an Existing Container in Interactive Mode
+
+- `docker start -ai command`: restart stopped container that was initially created in interactive mode and work with it interactively again
+  - `-a` flag: enables seeing output, attaches to container's stdout and stderr.
+  - `-i` flag: keeps stdin open for interactive input.
+
+### [Unit 2. Deleting Images and Containers](https://codesignal.com/learn/courses/diving-deeper-into-images-containers/lessons/deleting-images-and-containers)
+
+#### Removing Containers
+
+```sh
+# Remove a stopped container
+docker rm ubuntu-container
+
+# output: if successful: returns container name in stout
+# will error if container still running. Stop container to fix 
+```
+
+#### Removing Images
+
+```sh
+# Remove an image that's not being used
+docker rmi ubuntu
+```
+
+- will error if image is being used
+
+#### Forcing Removal with the -f Flag
+
+```sh
+# Forcefully remove a running container
+docker rm -f ubuntu-container
+```
 
 ## Course 3. Managing Data & Working with Volumes
 

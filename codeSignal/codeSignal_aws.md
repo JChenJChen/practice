@@ -1139,15 +1139,123 @@ dynamodb_resource_us_east_1 = session_us_east_1.resource('dynamodb')
 dynamodb_client_us_east_1 = session_us_east_1.client('dynamodb')
 ```
 
-
-
 ### [Lesson 2: Creating and Configuring DynamoDB Tables with AWS SDK for Python](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-and-configuring-dynamodb-tables-with-aws-sdk-for-python?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+- PK: 
+  - partition key: Hash key
+  - sort key (AKA range key)
+- Data types:
+  - scalar:
+    - string (S)
+    - number (N)
+    - boolean (BOOL)
+    - NULL
+  - document:
+    - map (M)
+    - list (L)
+  - Set:
+    - string set (SS)
+    - number set (NS)
+    - binary set (BS)
+
+- DynamoDB capacity modes:
+  1. provisioned:
+    - specify reads&writes/sec
+    - for predictable traffic
+    - eligible for AWS free tier
+    - Read Capacity Unit (RCU): Provides enough capacity to perform one strongly consistent read per second, or two eventually consistent reads per second, for an item up to 4 KB in size.
+      - eventual consistency: costs 1/2 the RCU as strong consistency
+    - Write Capacity Unit (WCU): Provides enough capacity to perform one write per second for an item up to 1 KB in size.
+  2. on-demand
+
+#### Create DynamoDB table using Provisioned Throughput with a composite primary key
+
+```py
+import boto3
+
+dynamodb = boto3.resource('dynamodb')  # Initialize the DynamoDB service
+
+# Create a table with Provisioned Throughput and a composite primary key
+table_provisioned = dynamodb.create_table(
+    TableName='Users',
+    KeySchema=[
+        {'AttributeName': 'username', 'KeyType': 'HASH'},  # Partition key
+        {'AttributeName': 'signup_date', 'KeyType': 'RANGE'}  # Sort key
+    ],
+    AttributeDefinitions=[
+        {'AttributeName': 'username', 'AttributeType': 'S'},  # String type
+        {'AttributeName': 'signup_date', 'AttributeType': 'S'}  # String type
+    ],
+    ProvisionedThroughput={'ReadCapacityUnits': 5, 'WriteCapacityUnits': 5}  # Specify capacity
+)
+```
+- attributes used as part of PK (i.e. partition or sort key) **must be** included in AttributeDefinitions.
+  - attr's not part of PK don't need to be defined in AttributeDefinitions unless involved in indexing or require specific type validation for operations -- allows DynamoDB to maintain flexible schema while eunsring that key attributes have defined data types for efficient indexing and querying.
+
+- on demand capacity mode ex:
+```py
+import boto3
+
+dynamodb = boto3.resource('dynamodb')
+
+table_on_demand = dynamodb.create_table(
+    TableName='Customers',
+    KeySchema=[{'AttributeName': 'customer_id', 'KeyType': 'HASH'}],
+    AttributeDefinitions=[{'AttributeName': 'customer_id', 'AttributeType': 'S'}],
+    BillingMode='PAY_PER_REQUEST'
+)
+```
+
+#### DyanmoDB Waiters
+```py
+import boto3
+
+# Initialize the boto3 DynamoDB service
+dynamodb = boto3.resource('dynamodb')
+
+waiter = dynamodb.meta.client.get_waiter('table_exists')
+
+# Configure the waiter to wait for up to 300 seconds (5 minutes), polling every 20 seconds
+waiter.wait(TableName='ExampleTable', WaiterConfig={'Delay': 20, 'MaxAttempts': 15})
+
+print("Table is now active and ready for use.")
+
+# ==OR== Wait until the table exists, using default settings
+table.wait_until_exists()
+```
+
+#### list all DynamoDB tables
+```py
+import boto3
+
+# Initialize the boto3 DynamoDB service
+dynamodb = boto3.resource('dynamodb')
+
+print("Existing tables:", [table.name for table in dynamodb.tables.all()])
+
+
+```
+
 
 ### [Lesson 3: Creating Data in DynamoDB: Inserting Items with PutItem and BatchWriteItem Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-data-in-dynamodb-inserting-items-with-putitem-and-batchwriteitem-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
 ### [Lesson 4: Mastering Data Retrieval in DynamoDB: GetItem and BatchGetItem](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/mastering-data-retrieval-in-dynamodb-getitem-and-batchgetitem?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
 ### [Lesson 5: Manipulating Data in DynamoDB: Update and Delete Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/manipulating-data-in-dynamodb-update-and-delete-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+```py
+import boto3
+# delete table getting table resource then calling delete() method on it:
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('Products')
+table.delete()
+
+
+# use delete_table() on/directly with low-level client:
+client = boto3.client('dynamodb')
+client.delete_table(TableName='ExampleTable')
+
+```
 
 ### [Lesson 6: Retrieving Multiple Objects Efficiently in DynamoDB](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/retrieving-multiple-objects-efficiently-in-dynamodb?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
