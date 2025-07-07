@@ -206,13 +206,18 @@ docker rm ubuntu-container
 docker rmi ubuntu
 ```
 
-- will error if image is being used
+- will error if image is being used by container &rarr; remove dependent container then `rmi`
 
-#### Forcing Removal with the -f Flag
+#### Forcing Removal with the -f / --force Flag
 
 ```sh
-# Forcefully remove a running container
+# Forcefully remove a running container or one w/ dependencies
 docker rm -f ubuntu-container
+```
+
+```sh
+# Forcefully delete a referenced image
+docker rmi -f ubuntu
 ```
 
 ## Course 3. Managing Data & Working with Volumes

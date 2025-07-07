@@ -507,6 +507,42 @@ custom_s3_resource = custom_session.resource('s3')
 ### [Lesson 2: Introduction to Boto3 Client Configurations](https://codesignal.com/learn/courses/introduction-to-aws-sdk-for-python/lessons/introduction-to-boto3-client-configurations?courseSlug=introduction-to-aws-sdk-for-python)
 - https://codesignal.com/learn/lesson/1985
 
+
+#### Custom Retry Strategy
+- for transient (network) errors, hitting API rate limits
+
+```py
+import boto3
+from botocore.config import Config
+
+# Example of comprehensive custom retry strategy
+config_with_retry=Config(
+    retries={
+        'max_attempts': 5, # commonly 3~10
+        'mode': 'standard', # fixed delay
+        # 'mode': 'adaptive', # dynamically adjust based on previous attempt
+    }
+)
+
+client = boto3.client('s3', config=config_with_retry)
+```
+
+
+#### Endpoint Configuration
+
+- enables directing traffic to specific endpoint URL, like:
+  - testing mock servers
+  - directing traffic to services in specific regions
+  - integrating with AWS-compatible external service hosts outside of AWS 
+
+```py
+import boto3
+
+# creating client with custom endpoint:
+s3_client = boto3.client('s3', endpoint_url='https://custom-endpoint.com'S)
+```
+
+
 #### p1 demo code
 ```py
 import boto3
@@ -515,6 +551,7 @@ from botocore.config import Config
 custom_config = Config(retries={'max_attempts': 3, 'mode': 'standard'})
 s3_client = boto3.client('s3', endpoint_url='https://my-test-bucket.com', config=custom_config)
 ```
+
 
 ### [Lesson 3: Navigating Boto3 Exceptions: Mastering Error Handling in AWS Operations](https://codesignal.com/learn/courses/introduction-to-aws-sdk-for-python/lessons/navigating-boto3-exceptions-mastering-error-handling-in-aws-operations?courseSlug=introduction-to-aws-sdk-for-python)
 - https://codesignal.com/learn/lesson/1986
@@ -1192,7 +1229,7 @@ table_provisioned = dynamodb.create_table(
 - attributes used as part of PK (i.e. partition or sort key) **must be** included in AttributeDefinitions.
   - attr's not part of PK don't need to be defined in AttributeDefinitions unless involved in indexing or require specific type validation for operations -- allows DynamoDB to maintain flexible schema while eunsring that key attributes have defined data types for efficient indexing and querying.
 
-- on demand capacity mode ex:
+- on demand capacity mode example:
 ```py
 import boto3
 
@@ -1213,6 +1250,7 @@ import boto3
 # Initialize the boto3 DynamoDB service
 dynamodb = boto3.resource('dynamodb')
 
+# get waiter, available waiters: ['table_exists', 'table_not_exists']
 waiter = dynamodb.meta.client.get_waiter('table_exists')
 
 # Configure the waiter to wait for up to 300 seconds (5 minutes), polling every 20 seconds
@@ -1233,13 +1271,330 @@ dynamodb = boto3.resource('dynamodb')
 
 print("Existing tables:", [table.name for table in dynamodb.tables.all()])
 
-
 ```
 
 
 ### [Lesson 3: Creating Data in DynamoDB: Inserting Items with PutItem and BatchWriteItem Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/creating-data-in-dynamodb-inserting-items-with-putitem-and-batchwriteitem-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
+#### PutItem
+
+```py
+table.put_item(
+    Item={
+        'student_id': 3,
+        'name': 'John',
+        'age': 21,
+        'major': 'Physics'
+    }
+)
+```
+
+- Item Size Limits: Each item, including all its attributes, cannot exceed 400 KB.
+- Consistency: PutItem operations By default ensure **eventual consistency**. can opt for strongly consistent reads **at double the read cost **if your application requires it.
+- Throughput Consumption: PutItem requests consumes write capacity units based on item size. In provisioned capacity mode, manage this carefully to avoid throttling.
+
+#### BatchWriteItem
+
+```py
+with table.batch_writer() as batch:
+    batch.put_item(Item={'student_id': 4, 'name': 'Emma', 'age': 23, 'major': 'Biology'})
+    batch.put_item(Item={'student_id': 5, 'name': 'Liam', 'age': 22, 'major': 'Chemistry'})
+```
+
+- Maximum Items: Each batch can include **up to 25 items**.
+- Maximum Size: total batch request size **cannot exceed 16 MB**.
+- Atomicity: operations within a batch are **not atomic** -- i.e. some items might write successfully while others could fail.
+- Error Handling: manual retries and error checking are necessary as DynamoDB does not automatically retry failed operations.
+
+#### Using Conditional Expressions in DynamoDB
+
+- conditionals enhance data integrity and operational control when inserting/updating data.
+
+- ex: check if record exists prior to PutItem to prevent unintentionally overwriting. By default, PutItem replaces existing record if PK matches. 
+```py
+try:
+    # Add a new student only if the student_id does not exist
+    response = table.put_item(
+        Item={
+            'student_id': 3,
+            'name': 'John',
+            'age': 21,
+            'major': 'Physics'
+        },
+        ConditionExpression='attribute_not_exists(student_id)'
+    )
+    print("Item added successfully:", response)
+except dynamodb.meta.client.exceptions.ConditionalCheckFailedException:
+    print("Item already exists.")
+```
+
+#### Handling Exceptions for DynamoDB's "PutItem" Operation
+
+- provisioned throughput limit exception:
+```py
+try:
+    # Add a new item
+    response = table.put_item(
+        Item={
+            'student_id': 3,
+            'name': 'John',
+            'age': 21,
+            'major': 'Physics'
+        }
+    )
+    print("Item added:", response)
+except ClientError as e:
+    if e.response['Error']['Code'] == 'ProvisionedThroughputExceededException':
+        print("Throughput limit exceeded. Please try again later.")
+    else:
+        raise Exception("Failed to add item due to:", e.response['Error']['Message'])
+```
+
+#### Short Introduction to "Scan" Operation
+
+- `.scan()`: reads all items in a DynamoDB table
+```py
+response = table.scan()
+
+for item in response['Items']:
+    print(item)
+```
+
+#### P1 Example
+
+- solution.py:
+```py
+import boto3
+import time
+
+# Create a DynamoDB resource
+dynamodb = boto3.resource('dynamodb')
+
+# Create the DynamoDB table
+table = dynamodb.create_table(
+    TableName='Students',
+    AttributeDefinitions=[
+        {
+            'AttributeName': 'student_id',
+            'AttributeType': 'N'
+        }
+    ],
+    KeySchema=[
+        {
+            'AttributeName': 'student_id',
+            'KeyType': 'HASH'
+        }
+    ],
+    ProvisionedThroughput={
+        'ReadCapacityUnits': 5,
+        'WriteCapacityUnits': 5
+    }
+)
+
+# Wait for the table to be created
+dynamodb.meta.client.get_waiter('table_exists').wait(
+    TableName='Students',
+    WaiterConfig={
+        'Delay': 2, # Poll every 2 seconds
+        'MaxAttempts': 10 # Stop after 10 attempts
+    }
+)
+
+# Put a data item in the table with PutItem
+table.put_item(
+    Item={
+        'student_id': 1,
+        'name': 'John Doe',
+        'age': 22,
+        'major': 'Computer Science'
+    }
+)
+
+# Put multiple data items in the table with BatchWriteItem
+with table.batch_writer() as batch:
+    batch.put_item(
+        Item={
+            'student_id': 2,
+            'name': 'Jane Doe',
+            'age': 21,
+            'major': 'Mathematics'
+        }
+    )
+    batch.put_item(
+        Item={
+            'student_id': 3,
+            'name': 'Jim Smith',
+            'age': 23,
+            'major': 'Physics'
+        }
+    )
+
+# Adding another item with a condition expression to ensure it doesn't overwrite an existing item
+try:
+    table.put_item(
+        Item={
+            'student_id': 1,
+            'name': 'Jake Long',
+            'age': 24,
+            'major': 'Biology'
+        },
+        ConditionExpression='attribute_not_exists(student_id)'
+    )
+    print("Item added successfully.")
+except boto3.exceptions.botocore.client.ClientError as e:
+    if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
+        print("Item already exists with the same student_id.")
+    else:
+        raise
+
+# List all items in the created table
+response = table.scan()
+
+for item in response['Items']:
+    print(item)
+```
+
+(including other support files to reference/learn from)
+
+- .codesignal/setup.sh:
+```sh
+if [ ! -f /tmp/setup_complete ]; then
+  echo "Please wait for the setup to complete"
+  exit
+fi
+
+python -m venv /bootstrap-apps/.virtualenvs/aws-localstack
+python -u /usercode/FILESYSTEM/solution.py
+
+```
+
+
+- .codesignal/run_solution.sh:
+```sh
+if [ ! -f /tmp/setup_complete ]; then
+  echo "Please wait for the setup to complete"
+  exit
+fi
+
+python -m venv /bootstrap-apps/.virtualenvs/aws-localstack
+python -u /usercode/FILESYSTEM/solution.py
+
+```
+
+- main.sh:
+```sh
+#!/bin/bash
+
+bash /usercode/FILESYSTEM/.codesignal/run_solution.sh
+```
+
+
 ### [Lesson 4: Mastering Data Retrieval in DynamoDB: GetItem and BatchGetItem](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/mastering-data-retrieval-in-dynamodb-getitem-and-batchgetitem?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
+
+#### Reading Data with "GetItem"
+
+- retrieve data via primary key
+
+- ex: PK = `year` + `title`:
+```py
+# Simple read
+# Example: 
+result = table.get_item(Key={'year': 2016, 'title': 'The Big New Movie'})
+if 'Item' in result:
+    print("Movie found:", result['Item'])
+else:
+    print("Movie not found.")
+```
+
+- `ProjectionExpression`: specify retrieval of only certain parameters
+```py
+# Attributes projection
+# Example: 
+result = table.get_item(
+    Key={'year': 2016, 'title': 'The Big New Movie'},
+    ProjectionExpression='title, genre',
+)
+if 'Item' in result:
+    print("Projected attributes of the movie:", result['Item'])
+```
+
+- `ConsistentRead`: 
+```py
+# Strongly consistent read
+result = table.get_item(
+    Key={'year': 2016, 'title': 'The Big New Movie'},
+    ConsistentRead=True
+)
+if 'Item' in result:
+    print("Consistently read movie details:", result['Item'])
+```
+
+#### Retrieving Multiple Items with BatchGetItem
+
+```py
+response = dynamodb.batch_get_item(
+    RequestItems={
+        'Movies': {
+            'Keys': [
+                {'year': 2016, 'title': 'The Big New Movie'},  # Full primary key (partition key and sort key)
+                {'year': 2017, 'title': 'The Bigger, Newer Movie'}  # Full primary key
+            ],
+            'ConsistentRead': True
+        }
+    }
+)
+```
+
+- Maximum Items: fetch <= 25 items in a single batch request.
+- Maximum Data Retrieval: total data amount retrieved <= 16 MB in a single batch operation.
+- Unprocessed Keys: If any part of batch request cannot be processed due to capacity unit limitations or internal server errors, failed items are returned in **UnprocessedKeys** response, and need to by retried.
+- Capacity Unit Consumption: Each batch item read consumes read capacity units (RCUs). `ConsistentRead = True` consumes double standard RCU for each item.
+
+#### Handling Reserved Words in DynamoDB Expressions
+
+- Some DynamoDB reserved words:
+  - Name
+  - Size
+  - Year
+  - Date
+  - Total
+  - Order
+  - Status
+
+- define aliases in a `ExpressionAttributeNames` map with a `ProjectionExpression` for:
+  - attribute names that coincide/conflict with reserved words
+  - Attributes with special characters
+  - Partial reads (to save on throughput and bandwidth)
+  
+- `ExpressionAttributeNames`: 
+  - map of placeholder tokens to actual attribute names to:
+    - Avoid conflicts with DynamoDB reserved keywords (like Name, Date, Size, etc.)
+    - Safely reference attribute names with special characters, dots (.), or dashes (-)
+    - Reference fields in expressions even if the names vary dynamically
+  - Besides projections, also used in ConditionExpression, FilterExpression, UpdateExpression -- anywhere attributes referred to by name
+  - {'attribute_name_alias': 'reserved_keyword'}
+- `ProjectionExpression`: string specifying subset of attributes to retrieve (aka project) in a `GetItem`, `Query`, or `Scan`
+ 
+
+```py
+result = table.get_item(
+    Key={'year': 2021, 'title': 'Example Movie'},
+    ProjectionExpression='#yr, title',
+    ExpressionAttributeNames={'#yr': 'year'}
+)
+if 'Item' in result:
+    print("Movie found with reserved word attribute:", result['Item'])
+else:
+    print("Movie not found.")
+```
+
+| Use Case                                   | Use `ProjectionExpression`? | Use `ExpressionAttributeNames`? |
+| ------------------------------------------ | --------------------------- | ------------------------------- |
+| You want **partial reads**                 | ✅                           | Optional (if no reserved names) |
+| Your attribute name is a **reserved word** | ✅                           | ✅                               |
+| Attribute has special characters           | ✅                           | ✅                               |
+| You're writing complex expressions         | Often                       | Often                           |
+
 
 ### [Lesson 5: Manipulating Data in DynamoDB: Update and Delete Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/manipulating-data-in-dynamodb-update-and-delete-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
@@ -1256,6 +1611,7 @@ client = boto3.client('dynamodb')
 client.delete_table(TableName='ExampleTable')
 
 ```
+^ how to check if table exists prior to attempting delete?
 
 ### [Lesson 6: Retrieving Multiple Objects Efficiently in DynamoDB](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/retrieving-multiple-objects-efficiently-in-dynamodb?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
 
@@ -1265,11 +1621,15 @@ client.delete_table(TableName='ExampleTable')
 
 ### [Lesson 1: Mastering AWS Messaging Fundamentals with Boto3](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/mastering-aws-messaging-fundamentals-with-boto3?courseSlug=mastering-messaging-with-aws-sdk-for-python)
 
+
 ### [Lesson 2: Creating and Configuring SQS Queues with Boto3](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/creating-and-configuring-sqs-queues-with-boto3?courseSlug=mastering-messaging-with-aws-sdk-for-python)
+
 
 ### [Lesson 3: Mastering SQS Operations: Sending, Receiving, and Deleting Messages](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/mastering-sqs-operations-sending-receiving-and-deleting-messages?courseSlug=mastering-messaging-with-aws-sdk-for-python)
 
+
 ### [Lesson 4: Creating and Configuring AWS SNS Topics with Python and Boto3](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/creating-and-configuring-aws-sns-topics-with-python-and-boto3?courseSlug=mastering-messaging-with-aws-sdk-for-python)
+
 
 ### [Lesson 5: Mastering AWS Messaging: Sending and Receiving Messages with SNS and SQS](https://codesignal.com/learn/courses/mastering-messaging-with-aws-sdk-for-python/lessons/mastering-aws-messaging-sending-and-receiving-messages-with-sns-and-sqs?courseSlug=mastering-messaging-with-aws-sdk-for-python)
 
@@ -1278,11 +1638,16 @@ client.delete_table(TableName='ExampleTable')
 
 ### [Lesson 1: Securing AWS Resources: An Introduction to AWS Secrets Manager, SSM, and KMS](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/securing-aws-resources-an-introduction-to-aws-secrets-manager-ssm-and-kms?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
 
+
 ### [Lesson 2: Mastering AWS Secrets Manager with Boto3: Creating, Retrieving, and Rotating Secrets](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/mastering-aws-secrets-manager-with-boto3-creating-retrieving-and-rotating-secrets?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
+
 
 ### [Lesson 3: Advanced Secrets Management in AWS with Python SDK](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/advanced-secrets-management-in-aws-with-python-sdk?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
 
+
 ### [Lesson 4: Managing Secrets and Configurations with AWS SSM Parameter Store](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/managing-secrets-and-configurations-with-aws-ssm-parameter-store?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
 
+
 ### [Lesson 5: Managing Encryption Keys with AWS KMS and Boto3](https://codesignal.com/learn/courses/aws-secrets-management-with-aws-sdk-for-python/lessons/managing-encryption-keys-with-aws-kms-and-boto3?courseSlug=aws-secrets-management-with-aws-sdk-for-python)
+
 
