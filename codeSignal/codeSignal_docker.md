@@ -220,6 +220,30 @@ docker rm -f ubuntu-container
 docker rmi -f ubuntu
 ```
 
+### [Unit 3. Automatically Removing Stopped Containers](https://codesignal.com/learn/courses/diving-deeper-into-images-containers/lessons/automatically-removing-stopped-containers)
+
+#### `-rm` Option
+
+- use with `docker run` or `create` to auto-remove once stop
+  - useful for temp or short-lived tasks -- regardless of how it was started 
+
+```sh
+# Run a container with automatic removal upon stopping
+docker run --rm --name my-nginx nginx
+```
+^ removes need to run `docker rm` afterwards
+
+```sh
+# Create a container with automatic removal upon stopping
+docker create --rm --name my-nginx nginx
+```
+> ^ Created container needs to be started manually. 
+> ^ Once container task completed or no longer needed, stopping container (manually) auto-removes it.
+
+- real world applications for `--rm`:
+  - dev & testing cycles
+  - CI/CD pipelines
+
 ## Course 3. Managing Data & Working with Volumes
 
 

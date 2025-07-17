@@ -2848,11 +2848,279 @@ grep 'pattern' filename
 grep -w 'pattern' filename # `-w`: match whole word
 grep -i 'pattern' filename # `-i`: case insensitive
 grep '^pattern' filename # `^`: match lines starting with pattern
+grep 'pattern$' filename # `$`: match lines ending with pattern | or with `find`: `find . -name '*.rar'`
 -n # show line number
 -v # invert match, lines that don't match pattern
 -c # count matches
 grep -e 'Hello' -e 'grep' file.txt # `-e`: OR logic
 grep -i 'grep' file.txt | grep -i 'hello' # `|`: AND logic
 ```
+
+
+#### PRACTICE 4
+- solution.sh:
+```sh
+#!/bin/bash
+
+echo "All users with Admin privileges are required to renew their credentials."
+# TODO: Find all users with Privilege Level "Admin"
+grep -w "Admin" users.txt
+
+echo -e "\nAll users with a software version starting with \"1.\" need to update their software."
+# TODO: Find users with a software version starting with "1."
+# Hint: You need to escape the period
+grep '1\.' users.txt
+
+echo -e "\nAll users who are not SuperAdmin must review the new security protocols."
+# TODO: Find all users without "SuperAdmin" privileges
+grep -v "SuperAdmin" users.txt
+
+echo -e "\nAll users with User privileges in Engineering should attend the Admin onboarding session."
+# TODO: Find all users with "User" privileges in the Engineering department.
+grep "User" users.txt | grep 'Engineering'
+```
+
+- users.txt:
+```txt
+Username  UID  Privilege Level   Security Software  Department
+alice      1001  Admin             1.0                HR
+bob        1002  User              2.1                Engineering
+cosmo      1003  SuperAdmin        1.2                Sales
+diana      1004  User              2.0                HR
+eve        1005  Admin             1.3                Engineering
+frank      1006  SuperAdmin        1.5                HR
+grace      1007  User              2.2                Sales
+hank       1008  Admin             1.1                Engineering
+ivy        1009  SuperAdmin        1.4                Engineering
+john       1010  User              2.3                HR
+```
+
+###### or in awk
+
+Why awk is more reliable than grep for structured data:
+- Column-aware: awk treats whitespace-separated data as fields ($1, $2, etc.), making it perfect for structured rows like a CSV or table.
+- Precise matching: grep searches anywhere in the line; awk lets you match specific columns only — avoiding false positives.
+- Combining conditions: awk can do complex logic like "column 3 equals Admin and column 5 equals Engineering" — which would require ugly grep chaining.
+- Clean output: You can tell awk exactly what to print (e.g. just usernames), not entire rows if you don’t need them.
+
+
+```sh
+#!/bin/bash
+
+echo "All users with Admin privileges are required to renew their credentials."
+# Find all users with Privilege Level "Admin"
+awk '$3 == "Admin" { print }' users.txt
+
+
+echo -e "\nAll users with a software version starting with \"1.\" need to update their software."
+# Find users with a software version starting with "1."
+awk '$4 ~ /^1\./ { print }' users.txt
+
+
+echo -e "\nAll users who are not SuperAdmin must review the new security protocols."
+# Find all users without "SuperAdmin" privileges
+awk '$3 != "SuperAdmin" { print }' users.txt
+
+
+echo -e "\nAll users with User privileges in Engineering should attend the Admin onboarding session."
+# Find all users with "User" privileges in the Engineering department.
+awk '$3 == "User" && $5 == "Engineering" { print }' users.txt
+```
+
+#### U3P5
+
+- solution.sh:
+```sh
+#!/bin/bash
+
+# Clear all files
+> report1.txt
+> report2.txt
+> report3.txt
+> summary.txt
+> errors.log
+
+echo "Server 1 Report" >> report1.txt
+# TODO: Append all lines that contain "Server 1" (include line numbers) to report1.txt
+grep -n "Server 1" system.log >> report1.txt
+
+echo "Server 2 Report" >> report2.txt
+# TODO: Append all lines that contain "Server 2" (include line numbers) to report2.txt
+grep -n "Server 2" system.log >> report2.txt
+
+echo "Server 3 Report" >> report3.txt
+# TODO: Append all lines that contain "Server 3" (include line numbers) to report3.txt
+grep -n "Server 3" system.log >> report3.txt
+
+
+echo "Connection ERROR Entries" >> errors.log
+# TODO: Append all lines containing "ERROR" AND "Connection" (case-insensitive) to errors.log
+grep -i "ERROR" system.log | grep -i "Connection" >> errors.log
+
+echo "Memory ERROR Entries" >> errors.log
+# TODO: Append all lines containing "ERROR" AND "Memory" (case-insensitive) to errors.log
+grep -i "ERROR" system.log | grep -i "Memory" >> errors.log
+
+
+echo "CPU ERROR Entries" >> errors.log
+# TODO: Append all lines containing "ERROR" AND "CPU" to errors.log
+grep "ERROR" system.log | grep "CPU" >> errors.log
+
+echo -n "Number of 'WARNING' Entries: " >> summary.txt
+# TODO: Count the number of lines that begin with WARNING and append it to summary.txt
+grep -c "^WARNING" system.log  >> summary.txt
+
+echo -e "\nIP Addresses" >> summary.txt
+# TODO: Append all lines containing IP (whole word) to summary.txt
+grep -w "IP" system.log >> summary.txt
+
+echo -e "\nHigh and Low Level Monitoring:" >> summary.txt
+# TODO: Append all lines with "High" or "Low" (case insensitive) to summary.txt
+
+grep -i -e "High" -e "Low" system.log >>summary.txt
+```
+
+### [Lesson 4: Text Substitution and Editing with Sed](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/text-substitution-and-editing-with-sed)
+
+#### Summary
+
+- Perform text substitution using sed 's/pattern/replacement/'
+- Use -i to make in-place changes directly in the file
+- Add the g flag to perform global substitution
+- Use sed 'pattern/d' to delete specific lines from a file with
+- Use sed 'pattern/a\new_line' to insert lines after a specific pattern
+- Use the . wildcard to match any single character
+- Use the * wildcard to match zero or more occurrences of the preceding character
+- Use the [] character class to match specific characters or ranges of characters
+- Use the \b word boundary to precisely match whole words
+
+#### Text Substitution
+
+```sh
+sed 's/pattern/replacement/' filename
+```
+- searches & replaces for first instance
+- outputs to terminal -- file is unchanged
+
+#### In-place Substitution
+
+- `-i`: make substitutions directly in file
+- must have write perms for file -- `chmod +w`
+
+#### Global Substitution
+
+- `g`: 
+``` sh
+#!/bin/bash
+
+echo "Hi World. Hi sed." > file.txt
+sed 's/Hi/Hello/g' file.txt
+```
+
+#### Deleting Lines with Sed
+
+- `d`:
+```sh
+sed 'pattern/d' filename
+
+# example:
+#!/bin/bash
+
+echo -e "Hello World\nDelete me" > file.txt
+sed '/Delete/d' file.txt
+```
+
+#### Inserting Lines with Sed
+
+- insert new_line after pattern:
+```sh
+sed 'pattern/a\new_line' filename
+
+# example:
+#!/bin/bash
+
+echo -e "Hello World\nThis won't match\nHello sed" > file.txt
+sed '/Hello/a Nice to meet you.' file.txt
+
+## output:
+# Hello World
+# Nice to meet you.
+# This won't match
+# Hello sed
+# Nice to meet you.
+```
+
+#### Saving Changes to a New File
+
+```sh
+#!/bin/bash
+
+echo -e "sed allows for efficient text management.\nWriting a script using sed automates tedious manual tasks." > sed.txt
+
+# Create grep.txt and allow write permissions
+touch grep.txt
+chmod +w grep.txt
+
+# Save to new file
+sed 's/sed/grep/g' sed.txt > grep.txt
+
+cat grep.txt
+
+# output:
+# grep allows for efficient text management.
+# Writing a script using grep automates tedious manual tasks.
+```
+
+#### Advanced Pattern Matching
+
+- `.`: matches any single character except a newline. 
+  - Example: want punctuation after "World" is always an "!". pattern to match: `/World./`:
+
+```sh
+#!/bin/bash
+echo "Hello World? Hello World%" | sed 's/World./World!/g' 
+
+# output:
+# Hello World! Hello World!
+```
+
+
+- `*`: matches >= 0 occurrences of the preceding character. 
+  - Example: reduce multiple spaces between words to a single space. pattern to match is `s/ */`. This pattern contains two spaces. The * will match zero or more occurrences of the preceding character which is a single space. This matches any sequences of two or more spaces. We will then replace it with / / which is a single space:
+
+```sh
+#!/bin/bash
+echo "Hello    World!   This  is  a   test." | sed 's/  */ /g'
+
+# output:
+# Hello World! This is a test.
+```
+
+  - `[]`: Matches any one of the enclosed characters. 
+    - example: replace all digits in a sentence with `#`. pattern to search for: `/[0-9]/` (matches any digit), replace it with `/#/`.
+
+```sh
+#!/bin/bash
+echo "My phone number is 123-456-7890." | sed 's/[0-9]/#/g'
+
+# output:
+# My phone number is ###-###-####.
+```
+
+- `\b`: matches a word boundary -- the position between a word and a space or punctuation.
+  - example: replace the word "sed" with "grep". pattern to match: `\bsed\b`.
+```sh
+#!/bin/bash
+echo "sed is used for text processing." | sed 's/\bsed\b/grep/'
+
+# output:
+# grep is used for text processing.
+```
+> ^ used is **not** replaced like "sed" bc no word boundary before "sed" in "used"
+
+
+### [Lesson 5: Text Processing with awk](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/text-processing-with-awk)
+
+
 
 dread said wed ned ted
