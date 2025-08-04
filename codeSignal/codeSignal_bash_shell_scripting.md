@@ -2984,8 +2984,8 @@ grep -i -e "High" -e "Low" system.log >>summary.txt
 
 #### Summary
 
-- Perform text substitution using sed 's/pattern/replacement/'
-- Use -i to make in-place changes directly in the file
+- `sed 's/...'`: Perform text substitution using sed 's/pattern/replacement/' 
+- Use `-i` to make in-place changes directly in the file -- without it, the changes **only print to stdout** and **don't update file**
 - Add the g flag to perform global substitution
 - Use sed 'pattern/d' to delete specific lines from a file with
 - Use sed 'pattern/a\new_line' to insert lines after a specific pattern
@@ -3118,6 +3118,38 @@ echo "sed is used for text processing." | sed 's/\bsed\b/grep/'
 ```
 > ^ used is **not** replaced like "sed" bc no word boundary before "sed" in "used"
 
+#### P1 example code
+
+```sh
+#!/bin/bash
+
+file="email.txt"
+new_file="new_email.txt"
+
+# Remove write access to email.txt to avoid accidental modification
+chmod -w $file
+
+# Make a copy of email.txt to edit.
+cp $file $new_file
+
+echo -e "******* Original email contents *******\n"
+cat $file
+
+# Replace the first occurence of 'Hi' with 'Hello'
+sed -i 's/Hi/Hello/' $new_file
+
+# Replacing all occurrences of 'Alice' with 'Cosmo'
+sed -i 's/Alice/Cosmo/g' $new_file
+
+# Deleting lines containing 'P.S.'"
+sed -i '/P.S./d' $new_file
+
+# Inserting a line after the line containing "document"
+sed -i '/document/a Please check the latest version.' $new_file
+
+echo -e "\n\n\n******* Edited email contents *******\n"
+cat $new_file
+```
 
 ### [Lesson 5: Text Processing with awk](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/text-processing-with-awk)
 
