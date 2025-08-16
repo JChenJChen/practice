@@ -3153,6 +3153,23 @@ cat $new_file
 
 ### [Lesson 5: Text Processing with awk](https://codesignal.com/learn/courses/text-processing-with-bash/lessons/text-processing-with-awk)
 
+#### heredoc
+
+```sh
+#!/bin/bash
+
+# Create a sample data file
+cat << EOF > data.txt
+Brand   Model     RAM
+Apple   MacBook    32
+Apple   iPad       16
+Dell    XPS        32
+Dell    Inspiron  128
+Lenovo  ThinkPad  128
+Lenovo  Yoga      256
+Apple   MacBook    64
+EOF
+```
 
 
 dread said wed ned ted

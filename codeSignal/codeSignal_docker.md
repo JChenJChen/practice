@@ -244,6 +244,17 @@ docker create --rm --name my-nginx nginx
   - dev & testing cycles
   - CI/CD pipelines
 
+
+### [Unit 4. Managing Unused Resources with Prune](https://codesignal.com/learn/courses/diving-deeper-into-images-containers/lessons/managing-unused-resources-with-prune)
+
+- docker container prune: cleanup stopped containers, frees up disk space.
+- docker image prune: cleanup dangling images, which occur when a new build of an image is created but not given a new name, leaving the old image as "dangling." `-a` flag removes any images not associated with running containers.
+- docker system prune: removes all unused data, including stopped containers, dangling images, and unused networks. 
+
+
+### Unit 5. Transferring Files between Host and Container
+
+
 ## Course 3. Managing Data & Working with Volumes
 
 
