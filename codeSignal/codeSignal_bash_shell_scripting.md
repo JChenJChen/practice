@@ -3171,5 +3171,232 @@ Apple   MacBook    64
 EOF
 ```
 
+- `cat << EOF`: starts heredoc, tells `cat` cmd to begin reading lines as string until EOF marker.
+- `> data.txt`: redirects `cat` cmd output to `data.txt` file.
+- lines between `<< EOF` and `EOF`: content written to `data.txt`.
+
+#### Basic Syntax of `awk`
+
+```sh
+awk options 'selection_criteria {action}' input-file > output-file
+```
+
+#### Printing Entire File Using `awk`
+
+```sh
+#!/bin/bash
+
+# Using `awk` to print the entire file
+awk '{print}' data.txt
+```
+
+- no options or selection_criteria
+- action is {print} enclosed in curly braces. The print pattern-action statement in awk tells it to print each line of the file.
+- no output-file, result displayed on the terminal.
+
+#### Field Numbers
+
+- `$` specifies space/tab delimited (changed by `-F`) columns
+  - `$1`: first field of a line of text
+  - `$2`: second field
+  - `$0`: whole line
+
+#### Conditional Text Selection
+
+- place condition **before** `{action}` block, enclosed in **single quotes (')**.
+
+```sh
+#!/bin/bash
+
+# Using `awk` to print lines where RAM is greater than or equal to 64
+awk '$3 >= 64 {print $0}' data.txt
+
+# output:
+# Brand   Model     RAM
+# Dell    Inspiron  128
+# Lenovo  ThinkPad  128
+# Lenovo  Yoga      256
+# Apple   MacBook    64
+```
+- `$3 >= 64 {print $0}`: instructs `awk` to print any line where third field (RAM) is 64 or greater.
+- `$0`: represents the entire line.
+
+#### Built-in NR Variable
+
+- "Number of Records"
+  - built-in variable that keeps track of the current line number being processed in the input file
+  - useful for actions based on the line number -- i.e. skipping headers, processing specific lines, or adding line numbers to output.
+    - Skip Header Line: `NR > 1`
+    - Process a Specific Line: ex: `awk 'NR == 3 {print}' data.txt`
+
+#### Pattern Matching with `awk`
+
+- enclosing regular expressions within slashes (`/pattern/`)
+
+```sh
+#!/bin/bash
+
+# Using `awk` with pattern matching
+awk '/Apple/ {print}' data.txt
+```
+#### Performing Calculations: Variables and END
+
+- used to specify an action to be executed after all lines have been processed
+
+```sh
+awk '{action1} END {action2}'
+```
+- perform `action1` for every line of text
+- `action2` is run once After all lines have been processed.
+
+
+##### ex: average RAM command of all entries
+
+- create `sum` and `count` variables.
+- For each line, add RAM value (column $3) to sum, and increment count.
+- After all lines processed, print `sum/count`
+
+```sh
+#!/bin/bash
+
+# Using `awk` to calculate the average RAM
+awk 'NR>1 {sum+=$3; count++} END {print "Average RAM:", sum/count}' data.txt
+
+# output:
+# Average RAM: 93.7143
+```
+
+- `NR>1`: skips header line because it does not contain a RAM value.
+- `{sum+=$3; count++}`: sums values of third field (RAM) and increments the count.
+- `END {print "Average RAM:", sum/count}`: executes after processing all lines, printing the calculated average RAM.
+
+#### Custom Line Messages
+
+- customize the output format for each line. i.e.: add text to our print statement by separating strings/field references with commas
+
+```sh
+#!/bin/bash
+
+# Using `awk` to print a custom message for each line
+awk 'NR>1 {print "Brand:", $1, "- Model:", $2, "- RAM:", $3}' data.txt
+
+# output:
+# Brand: Apple - Model: MacBook - RAM: 32
+# Brand: Apple - Model: iPad - RAM: 16
+# Brand: Dell - Model: XPS - RAM: 32
+# Brand: Dell - Model: Inspiron - RAM: 128
+# Brand: Lenovo - Model: ThinkPad - RAM: 128
+# Brand: Lenovo - Model: Yoga - RAM: 256
+# Brand: Apple - Model: MacBook - RAM: 64
+```
+^ output's still a bit difficult to read, should use `printf` to format further
+
+#### Table Formatting with `awk`
+
+- offers more control over output formatting compared to `print`
+
+```sh
+awk '{printf format, item1, item2, ..., itemN}' input-file
+```
+- includes text & format specifiers that begin with `$`
+  - common specifiers:
+    - `%d`: Integer
+    - `%s`: String
+    - `\n`: Newline character
+  - Modifiers can also be added to control the width and alignment:
+    - Minimum Field Width: number between % and format specifier defines minimum field width.
+    - Positive Width: Right-justified by default. ex: `%10s` formats a string, right-aligned, with a minimum width of 10 characters.
+    - Negative Width: Left-justified if prefixed with a minus sign. For example, %-10s formats a string, left-aligned, with a minimum width of 10 characters.
+
+```sh
+#!/bin/bash
+
+# Using `awk` to format output as a table
+awk 'BEGIN {print "Brand    Model     RAM"} NR>1 {printf "%-8s %-10s %2d\n", $1, $2, $3}' data.txt
+
+# output:
+# Brand    Model     RAM
+# Apple    MacBook    32
+# Apple    iPad       16
+# Dell     XPS        32
+# Dell     Inspiron   128
+# Lenovo   ThinkPad   128
+# Lenovo   Yoga       256
+# Apple    MacBook    64
+```
+- `BEGIN {print "Brand Model RAM"}`: executed before input file processed.
+  - `{print "Brand Model RAM"}`: prints header row "Brand Model RAM" before processing the actual data. The string contains specific spaces to align the header with the columns that will follow.
+- `NR > 1`: ensures that the action `{printf ...}` is applied only to lines after the first one (header line).
+- `%-8s`: Left-align (-) a string (s) with width of 8 characters.
+- `%-10s`: Left-align (-) a string (s) with a width of 10 characters.
+- `%2d`: Print an integer (d) with exactly 2 digits.
+- `\n`: Newline character to move to the next line after printing.
+- `$1, $2, $3`: fields to be printed according to the format specifiers.
+- `data.txt`: input file containing data to be processed.
+
+#### P1 example code
+```sh
+#!/bin/bash
+
+# Create a sample data file
+cat << EOF > data.txt
+Brand Model RAM
+Apple MacBook 32
+Apple iPad 16
+Dell XPS 32
+Dell Inspiron 128
+Lenovo ThinkPad 128
+Lenovo Yoga 256
+Apple MacBook 64
+EOF
+
+# Print formatted table
+echo "**Computer Inventory**" > output.txt
+awk 'BEGIN {print "Brand    Model     RAM"} NR>1 {printf "%-8s %-10s %d\n", $1, $2, $3}' data.txt >> output.txt
+echo "" >> output.txt
+
+# Print "Brand" and "Model" of computers with 128 GB RAM
+echo "**Computers with 128 GB RAM**" >> output.txt
+awk '$3 == 128  {print $1, $2}' data.txt >> output.txt
+echo "" >> output.txt
+
+# Print lines with "Apple"
+echo "**Apple Products**" >> output.txt
+awk '/Apple/ {print}' data.txt  >> output.txt
+echo "" >> output.txt
+
+# Print average RAM
+echo "**Average RAM**" >> output.txt
+awk 'NR>1 {sum+=$3; count++} END {print "Average RAM:", sum/count}' data.txt >> output.txt
+
+cat output.txt
+```
+
+#### P4 solution
+
+- Begin with the line "Starting Computer".
+- For each operation listed in operations.txt (excluding the header "Operations"), prepend "Task <line_number>:" where <line_number> starts at 1.
+- End with the line "Computer Startup Complete".
+
+
+```sh
+#!/bin/bash
+
+# TODO: Create the operations.txt file
+cat << EOF > operations.txt
+Operation
+Powering On
+Initializing BIOS
+Loading Kernel
+Authenticating User
+EOF
+
+# TODO: Process operations.txt and create server.logs with the required format using awk.
+awk 'BEGIN {print "Starting Computer"} 
+NR > 1 {print "Task "NR-1": "$0}
+END {print "Computer Startup Complete"}' operations.txt > server.logs
+
+cat server.logs
+```
 
 dread said wed ned ted
