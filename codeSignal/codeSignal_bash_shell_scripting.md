@@ -3370,6 +3370,29 @@ echo "**Average RAM**" >> output.txt
 awk 'NR>1 {sum+=$3; count++} END {print "Average RAM:", sum/count}' data.txt >> output.txt
 
 cat output.txt
+
+# output:
+# **Computer Inventory**
+# Brand    Model     RAM
+# Apple    MacBook    32
+# Apple    iPad       16
+# Dell     XPS        32
+# Dell     Inspiron   128
+# Lenovo   ThinkPad   128
+# Lenovo   Yoga       256
+# Apple    MacBook    64
+# 
+# **Computers with 128 GB RAM**
+# Dell Inspiron
+# Lenovo ThinkPad
+# 
+# **Apple Products**
+# Apple MacBook 32
+# Apple iPad 16
+# Apple MacBook 64
+# 
+# **Average RAM**
+# Average RAM: 93.7143
 ```
 
 #### P4 solution
@@ -3397,6 +3420,67 @@ NR > 1 {print "Task "NR-1": "$0}
 END {print "Computer Startup Complete"}' operations.txt > server.logs
 
 cat server.logs
+```
+
+#### P5 solution
+```sh
+#!/bin/bash
+
+# Create a sample data file
+cat << EOF > data.txt
+Brand   Item       Price
+Nike    Shoes      150
+Adidas  Socks       20
+Nike    Hat         30
+Puma    Jacket     120
+Nike    Shirt       80
+EOF
+
+echo "All Nike Products:" > summary.txt
+# TODO: Append the item and price columns for lines containing 'Nike' to summary.txt
+awk '/Nike/ {print $2, $3}' data.txt >> summary.txt
+
+echo "" >> summary.txt
+
+echo "Total Price" >> summary.txt
+# TODO: Calculate the total price of all items and append to summary.txt
+awk  'NR>1 {sum+=$3} END {print ":", sum}' data.txt >> summary.txt 
+echo "" >> summary.txt
+
+echo "Items \$100 or more:" >> summary.txt
+# TODO: Append all rows with a price of $100 or more
+awk 'NR==1 || $3 >= 100 {print $0}' data.txt >> summary.txt 
+echo "" >> summary.txt
+
+echo "Formatted Table:" >> summary.txt
+# TODO: Append the formatted table
+awk 'NR==1 {printf "%-8s %-10s %s\n", $1, $2, $3} NR>1 {printf "%-8s %-10s %d\n", $1, $2, $3}' data.txt >> summary.txt
+
+
+cat summary.txt
+
+# output: 
+# All Nike Products:
+# Shoes 150
+# Hat 30
+# Shirt 80
+# 
+# Total Price
+# : 400
+# 
+# Items $100 or more:
+# Brand   Item       Price
+# Nike    Shoes      150
+# Puma    Jacket     120
+# 
+# Formatted Table:
+# Brand    Item       Price
+# Nike     Shoes      150
+# Adidas   Socks      20
+# Nike     Hat        30
+# Puma     Jacket     120
+# Nike     Shirt      80
+
 ```
 
 dread said wed ned ted
