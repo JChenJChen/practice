@@ -1638,7 +1638,12 @@ table.put_item(Item={'year': 2018, 'title': 'Another New Movie'})
 
 # Get an item using GetItem
 result = table.get_item(Key={'year': 2016, 'title': 'The Big New Movie'})
+
+print(f'result: {result}')
+# result: {'Item': {'title': 'The Big New Movie', 'year': Decimal('2016')}, 'ResponseMetadata': {'RequestId': '2eab66da-ee8c-4eb4-b70a-18ef6656d58a', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'TwistedWeb/24.3.0', 'date': 'Sat, 23 Aug 2025 01:48:57 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '70', 'x-amzn-requestid': '2eab66da-ee8c-4eb4-b70a-18ef6656d58a', 'x-amz-crc32': '3517590086', 'x-localstack': 'true'}, 'RetryAttempts': 0}}
+
 print(result.get('Item'))
+# {'title': 'The Big New Movie', 'year': Decimal('2016')}
 
 # Using BatchGetItem 
 response = dynamodb.batch_get_item(
@@ -1654,6 +1659,7 @@ response = dynamodb.batch_get_item(
     }
 )
 print(response['Responses']['Movies'])
+# [{'title': 'The Big New Movie', 'year': Decimal('2016')}, {'title': 'The Bigger, Newer Movie', 'year': Decimal('2017')}]
 ```
 
 ### [Lesson 5: Manipulating Data in DynamoDB: Update and Delete Operations](https://codesignal.com/learn/courses/introduction-to-dynamodb-with-aws-sdk-for-python/lessons/manipulating-data-in-dynamodb-update-and-delete-operations?courseSlug=introduction-to-dynamodb-with-aws-sdk-for-python)
